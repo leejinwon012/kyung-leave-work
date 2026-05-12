@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경이 칼퇴 문자 양식</title>
+    <title>경이 칼퇴 문자 양식 (최종 수정본)</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #f8f9fa; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -18,8 +18,21 @@
         .carrier-btn.active { border-color: #007bff; background: #e7f1ff; color: #007bff; }
         .output-area { position: relative; display: none; }
         .output-area.active { display: block; }
-        .msg-content { background: #f1f3f5; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 1px solid #e9ecef; min-height: 200px; }
-        .copy-wrapper { display: flex; justify-content: flex-end; margin-top: 10px; }
+        /* 수정 가능한 박스 스타일 */
+        .msg-content { 
+            background: #ffffff; 
+            padding: 20px; 
+            border-radius: 10px; 
+            white-space: pre-wrap; 
+            font-size: 14px; 
+            border: 2px solid #e9ecef; 
+            min-height: 250px; 
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .msg-content:focus { border-color: #007bff; background: #fff; }
+        .copy-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .edit-info { font-size: 12px; color: #888; }
         .copy-btn { padding: 12px 25px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .copy-btn:hover { background: #0056b3; }
         .auto-info { font-size: 11px; color: #28a745; margin-top: 5px; }
@@ -28,7 +41,7 @@
 <body>
 
     <div class="card">
-        <h2>📋 데이터 입력 (최신 DB 반영)</h2>
+        <h2>📋 데이터 입력</h2>
         <div class="input-grid">
             <div class="input-group" style="grid-column: span 2;">
                 <label>통신사 선택</label>
@@ -40,7 +53,7 @@
             </div>
             <div class="input-group">
                 <label>가입 유형</label>
-                <select id="contractType" onchange="autoMatchPrice(); toggleInputs();">
+                <select id="contractType" onchange="autoMatchPrice();">
                     <option value="SELECT">선택약정 (요금 25% 할인)</option>
                     <option value="GONGSI">공시지원금 (기기값 할인)</option>
                 </select>
@@ -68,7 +81,7 @@
             </div>
             <div class="input-group">
                 <label>요금제 변경일 (숫자만)</label>
-                <input type="text" id="dateInput" placeholder="260701" maxlength="6" oninput="formatDate(this)">
+                <input type="text" id="dateInput" placeholder="270101" maxlength="6" oninput="formatDate(this)">
             </div>
             <div class="input-group" style="grid-column: span 2;">
                 <label>담당자 번호 (숫자만 입력)</label>
@@ -78,9 +91,11 @@
     </div>
 
     <div id="outputArea" class="output-area card">
-        <h2 id="carrierTitle">문자 양식</h2>
-        <div id="msgBox" class="msg-content"></div>
+        <h2 id="carrierTitle">문자 양식 (직접 수정 가능)</h2>
+        <!-- contenteditable="true" 속성으로 직접 지우고 쓰기 가능 -->
+        <div id="msgBox" class="msg-content" contenteditable="true"></div>
         <div class="copy-wrapper">
+            <span class="edit-info">💡 양식 박스 안의 내용을 직접 클릭하여 수정할 수 있습니다.</span>
             <button class="copy-btn" onclick="copyText()">복사하기</button>
         </div>
     </div>
@@ -90,61 +105,21 @@
 
         const priceDB = {
             "SKT": {
-                "SELECT": {
-                    "24": {
-                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
-                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
-                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
-                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
-                    }
-                },
-                "GONGSI": {
-                    "24": {
-                        "S26_256": "718490", "S26_512": "988190", "S26P_256": "929550", "S26P_512": "1199250",
-                        "S26U_256": "1297750", "S26U_512": "1567450"
-                    }
-                }
+                "SELECT": { "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" } },
+                "GONGSI": { "24": { "S26_256": "718490", "S26_512": "988190", "S26P_256": "929550", "S26P_512": "1199250", "S26U_256": "1297750", "S26U_512": "1567450" } }
             },
             "KT": {
-                "SELECT": {
-                    "24": {
-                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
-                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
-                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
-                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
-                    }
-                }
+                "SELECT": { "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" } }
             },
             "LGU": {
                 "SELECT": {
-                    "24": {
-                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
-                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
-                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
-                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
-                    },
-                    "30": {
-                        "S26_256": "1351830", "S26_512": "1624560", "S26P_256": "1565670", "S26P_512": "1838010",
-                        "S26U_256": "1937620", "S26U_512": "2210360", "S25E_256": "1612710", "S25E_512": "1766850",
-                        "Z_FLIP7FE_256": "1292550", "Z_FLIP7_256": "1600460", "Z_FLIP7_512": "1771620",
-                        "Z_FOLD7_256": "2564110", "Z_FOLD7_512": "2735820"
-                    },
-                    "36": {
-                        "S26_256": "1371320", "S26_512": "1647990", "S26P_256": "1587840", "S26P_512": "1864510",
-                        "S26U_256": "1965560", "S26U_512": "2242230", "S25E_256": "1635940", "S25E_512": "1792330",
-                        "Z_FLIP7FE_256": "1311190", "Z_FLIP7_256": "1623920", "Z_FLIP7_512": "1797150",
-                        "Z_FOLD7_256": "2601900", "Z_FOLD7_512": "2775300"
-                    }
+                    "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" },
+                    "30": { "S26_256": "1351830", "S26_512": "1624560", "S26P_256": "1565670", "S26P_512": "1838010", "S26U_256": "1937620", "S26U_512": "2210360", "S25E_256": "1612710", "S25E_512": "1766850", "Z_FLIP7FE_256": "1292550", "Z_FLIP7_256": "1600460", "Z_FLIP7_512": "1771620", "Z_FOLD7_256": "2564110", "Z_FOLD7_512": "2735820" },
+                    "36": { "S26_256": "1371320", "S26_512": "1647990", "S26P_256": "1587840", "S26P_512": "1864510", "S26U_256": "1965560", "S26U_512": "2242230", "S25E_256": "1635940", "S25E_512": "1792330", "Z_FLIP7FE_256": "1311190", "Z_FLIP7_256": "1623920", "Z_FLIP7_512": "1797150", "Z_FOLD7_256": "2601900", "Z_FOLD7_512": "2775300" }
                 },
                 "GONGSI": {
-                    "24": {
-                        "S26_256": "590570", "S26_512": "860260", "S26P_256": "801630", "S26P_512": "1071330",
-                        "S26U_256": "1169830", "S26U_512": "1439530"
-                    },
-                    "30": {
-                        "S26_256": "599700", "S26_512": "873580", "S26P_256": "814040", "S26P_512": "1087920",
-                        "S26U_256": "1187940", "S26U_512": "1461810"
-                    }
+                    "24": { "S26_256": "590570", "S26_512": "860260", "S26P_256": "801630", "S26P_512": "1071330", "S26U_256": "1169830", "S26U_512": "1439530" },
+                    "30": { "S26_256": "599700", "S26_512": "873580", "S26P_256": "814040", "S26P_512": "1087920", "S26U_256": "1187940", "S26U_512": "1461810" }
                 }
             }
         };
@@ -183,7 +158,6 @@
             updateColors();
         }
 
-        // 수정된 핵심 로직: SK/KT도 30/36개월 선택 시 LG 데이터 참조
         function autoMatchPrice() {
             if (!currentCarrier) return;
             const type = document.getElementById('contractType').value;
@@ -191,17 +165,11 @@
             const month = document.getElementById('monthSelect').value;
             
             let matchedPrice = "";
-
-            // 1. 해당 통신사 전용 데이터가 있는지 먼저 확인
             if (priceDB[currentCarrier]?.[type]?.[month]?.[model]) {
                 matchedPrice = priceDB[currentCarrier][type][month][model];
-            } 
-            // 2. 데이터가 없는 경우(SK/KT) 선택약정 30/36개월이면 LG 데이터 강제 매칭
-            else if (type === "SELECT" && (month === "30" || month === "36")) {
+            } else if (type === "SELECT" && (month === "30" || month === "36")) {
                 matchedPrice = priceDB["LGU"]["SELECT"][month]?.[model];
-            }
-            // 3. 마지막 수단으로 각 통신사의 24개월 데이터 참조
-            else if (priceDB[currentCarrier]?.[type]?.["24"]?.[model]) {
+            } else if (priceDB[currentCarrier]?.[type]?.["24"]?.[model]) {
                 matchedPrice = priceDB[currentCarrier][type]["24"][model];
             }
             
@@ -216,14 +184,9 @@
             colorSelect.innerHTML = "";
             modelData[modelKey].colors.forEach(c => {
                 const opt = document.createElement('option');
-                opt.value = c;
-                opt.innerText = c;
+                opt.value = c; opt.innerText = c;
                 colorSelect.appendChild(opt);
             });
-            updateMsg();
-        }
-
-        function toggleInputs() {
             updateMsg();
         }
 
@@ -262,11 +225,15 @@
             updateMsg();
         }
 
+        // 연도 버그 수정 완료 (앞 2자리 인식)
         function formatDate(target) {
             let val = target.value.replace(/[^0-9]/g, '');
             if (val.length === 6) {
-                target.setAttribute('data-formatted', `26년 ${parseInt(val.substring(2,4))}월 ${parseInt(val.substring(4,6))}일`);
-                target.setAttribute('data-kt-formatted', `2026-${val.substring(2,4)}-${val.substring(4,6)}`);
+                let yy = val.substring(0, 2);
+                let mm = parseInt(val.substring(2, 4));
+                let dd = parseInt(val.substring(4, 6));
+                target.setAttribute('data-formatted', `${yy}년 ${mm}월 ${dd}일`);
+                target.setAttribute('data-kt-formatted', `20${yy}-${val.substring(2, 4)}-${val.substring(4, 6)}`);
             } else {
                 target.setAttribute('data-formatted', val);
                 target.setAttribute('data-kt-formatted', val);
@@ -277,7 +244,7 @@
         function copyText() {
             const text = document.getElementById('msgBox').innerText;
             if(!text) return;
-            navigator.clipboard.writeText(text).then(() => alert("복사되었습니다!"));
+            navigator.clipboard.writeText(text).then(() => alert("수정된 양식이 복사되었습니다!"));
         }
     </script>
 </body>
