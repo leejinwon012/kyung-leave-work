@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할부 이자 계산기</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 500px; margin: 0 auto; background-color: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
+        .result p { margin: 5px 0; }
+        .highlight { color: #d9534f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>📱 할부 이자 계산기</h2>
+    
+    <div class="input-group">
+        <label for="price">출고가 (원)</label>
+        <input type="number" id="price" placeholder="예: 1200000" value="1000000">
+    </div>
+
+    <div class="input-group">
+        <label for="support">공시지원금 (원)</label>
+        <input type="number" id="support" placeholder="예: 300000" value="0">
+    </div>
+
+    <div class="input-group">
+        <label for="months">할부 기간 (개월)</label>
+        <select id="months">
+            <option value="12">12개월 (1.0322)</option>
+            <option value="24" selected>24개월 (1.0631 - 실무 1.066)</option>
+            <option value="30">30개월 (1.0791)</option>
+            <option value="36">36개월 (1.0954)</option>
+            <option value="48">48개월 (1.1287)</option>
+        </select>
+    </div>
+
+    <button onclick="calculate()">계산하기</button>
+
+    <div id="resultArea" class="result">
+        <p>할부원금: <span id="resPrincipal">0</span>원</p>
+        <p>총 할부이자: <span id="resInterest" class="highlight">0</span>원</p>
+        <hr>
+        <p><strong>최종 납부 합계: <span id="resTotal">0</span>원</strong></p>
+        <p><small>(월 납부액: <span id="resMonthly">0</span>원)</small></p>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // 1. 값 가져오기
+        const price = parseFloat(document.getElementById('price').value) || 0;
+        const support = parseFloat(document.getElementById('support').value) || 0;
+        const months = parseInt(document.getElementById('months').value);
+
+        // 2. 할부원금 계산
+        const principal = price - support;
+        if (principal <= 0) {
+            alert("공시지원금이 출고가보다 큽니다.");
+            return;
+        }
+
+        // 3. 개월수별 계수 설정 (연 5.9% 원리금균등 기준)
+        // 24개월은 요청하신 대로 1.066에 근접하게 세팅되었습니다.
+        const rates = {
+            12: 1.0322,
+            24: 1.0660, // 실무 기준치 적용
+            30: 1.0791,
+            36: 1.0954,
+            48: 1.1287
+        };
+
+        const factor = rates[months];
+
+        // 4. 이자 및 총액 계산
+        const totalAmount = Math.floor(principal * factor);
+        const totalInterest = totalAmount - principal;
+        const monthlyPayment = Math.floor(totalAmount / months);
+
+        // 5. 결과 출력
+        document.getElementById('resPrincipal').innerText = principal.toLocaleString();
+        document.getElementById('resInterest').innerText = totalInterest.toLocaleString();
+        document.getElementById('resTotal').innerText = totalAmount.toLocaleString();
+        document.getElementById('resMonthly').innerText = monthlyPayment.toLocaleString();
+        
+        document.getElementById('resultArea').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
