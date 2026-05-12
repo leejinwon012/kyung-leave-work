@@ -28,19 +28,19 @@
 <body>
 
     <div class="card">
-        <h2>📋 데이터 입력</h2>
+        <h2>📋 데이터 입력 (최신 DB 반영)</h2>
         <div class="input-grid">
             <div class="input-group" style="grid-column: span 2;">
                 <label>통신사 선택</label>
                 <div class="carrier-selector">
                     <button class="carrier-btn" id="btn_SKT" onclick="setCarrier('SKT', this)">SKT</button>
-                    <button class="carrier-btn" id="btn_LGU" onclick="setCarrier('LGU', this)">LGU+</button>
                     <button class="carrier-btn" id="btn_KT" onclick="setCarrier('KT', this)">KT</button>
+                    <button class="carrier-btn" id="btn_LGU" onclick="setCarrier('LGU', this)">LGU+</button>
                 </div>
             </div>
             <div class="input-group">
                 <label>가입 유형</label>
-                <select id="contractType" onchange="toggleInputs()">
+                <select id="contractType" onchange="autoMatchPrice(); toggleInputs();">
                     <option value="SELECT">선택약정 (요금 25% 할인)</option>
                     <option value="GONGSI">공시지원금 (기기값 할인)</option>
                 </select>
@@ -62,9 +62,9 @@
                 <select id="colorSelect" onchange="updateMsg()"></select>
             </div>
             <div class="input-group">
-                <label id="priceLabel">할부원금/납부금</label>
+                <label id="priceLabel">할부원금</label>
                 <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateMsg()">
-                <span class="auto-info">※ 모델 선택 시 데이터 기반 자동 매칭</span>
+                <span class="auto-info">※ 최신 할부원금 DB 자동 매칭 완료</span>
             </div>
             <div class="input-group">
                 <label>요금제 변경일 (숫자만)</label>
@@ -88,45 +88,82 @@
     <script>
         let currentCarrier = '';
 
-        // 1:1 매칭 데이터셋 (제공해주신 엑셀 기반)
+        // 전송해주신 데이터 정밀 반영
         const priceDB = {
             "SKT": {
-                "24": {
-                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
-                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                "SELECT": {
+                    "24": {
+                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
+                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
+                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
+                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
+                    }
+                },
+                "GONGSI": {
+                    "24": {
+                        "S26_256": "718490", "S26_512": "988190", "S26P_256": "929550", "S26P_512": "1199250",
+                        "S26U_256": "1297750", "S26U_512": "1567450"
+                    }
                 }
             },
             "KT": {
-                "24": {
-                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
-                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                "SELECT": {
+                    "24": {
+                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
+                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
+                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
+                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
+                    }
                 }
             },
             "LGU": {
-                "24": {
-                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
-                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                "SELECT": {
+                    "24": {
+                        "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750",
+                        "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630",
+                        "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280",
+                        "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710"
+                    },
+                    "30": {
+                        "S26_256": "1351830", "S26_512": "1624560", "S26P_256": "1565670", "S26P_512": "1838010",
+                        "S26U_256": "1937620", "S26U_512": "2210360", "S25E_256": "1612710", "S25E_512": "1766850",
+                        "Z_FLIP7FE_256": "1292550", "Z_FLIP7_256": "1600460", "Z_FLIP7_512": "1771620",
+                        "Z_FOLD7_256": "2564110", "Z_FOLD7_512": "2735820"
+                    },
+                    "36": {
+                        "S26_256": "1371320", "S26_512": "1647990", "S26P_256": "1587840", "S26P_512": "1864510",
+                        "S26U_256": "1965560", "S26U_512": "2242230", "S25E_256": "1635940", "S25E_512": "1792330",
+                        "Z_FLIP7FE_256": "1311190", "Z_FLIP7_256": "1623920", "Z_FLIP7_512": "1797150",
+                        "Z_FOLD7_256": "2601900", "Z_FOLD7_512": "2775300"
+                    }
                 },
-                "30": {
-                    "S26_256": "1372500", "S26_512": "1512120", "S26P_256": "1590120", 
-                    "S26P_512": "1729740", "S26U_256": "1999110", "S26U_512": "2244090", "Z_FLIP7_256": "1715310", "Z_FOLD7_512": "2735820"
-                },
-                "36": {
-                    "S26_256": "1412496", "S26_512": "1556136", "S26P_256": "1587840", 
-                    "S26P_512": "1780020", "S26U_256": "2057268", "S26U_512": "2309424", "Z_FLIP7_256": "1765152"
+                "GONGSI": {
+                    "24": {
+                        "S26_256": "590570", "S26_512": "860260", "S26P_256": "801630", "S26P_512": "1071330",
+                        "S26U_256": "1169830", "S26U_512": "1439530"
+                    },
+                    "30": {
+                        "S26_256": "599700", "S26_512": "873580", "S26P_256": "814040", "S26P_512": "1087920",
+                        "S26U_256": "1187940", "S26U_512": "1461810"
+                    }
                 }
             }
         };
 
         const modelData = {
-            "S26_256": { name: "갤럭시 / S26 / 256GB", lgName: "삼성 갤럭시S26 (256G)", colors: ["실버", "네이비", "블루", "민트"] },
-            "S26_512": { name: "갤럭시 / S26 / 512GB", lgName: "삼성 갤럭시S26 (512G)", colors: ["실버", "네이비", "블루", "민트"] },
-            "S26P_256": { name: "갤럭시 / S26+ / 256GB", lgName: "삼성 갤럭시S26+ (256G)", colors: ["실버", "네이비", "블루", "민트"] },
-            "S26P_512": { name: "갤럭시 / S26+ / 512GB", lgName: "삼성 갤럭시S26+ (512G)", colors: ["실버", "네이비", "블루", "민트"] },
-            "S26U_256": { name: "갤럭시 / S26울트라 / 256GB", lgName: "삼성 갤럭시S26울트라 (256G)", colors: ["티타늄 블랙", "티타늄 그레이", "티타늄 실버", "티타늄 블루"] },
-            "S26U_512": { name: "갤럭시 / S26울트라 / 512GB", lgName: "삼성 갤럭시S26울트라 (512G)", colors: ["티타늄 블랙", "티타늄 그레이", "티타늄 실버", "티타늄 블루"] },
-            "Z_FLIP7_256": { name: "갤럭시 / Z플립7 / 256GB", lgName: "삼성 갤럭시 Z플립7 (256G)", colors: ["블루", "옐로우", "민트", "그라파이트"] },
-            "Z_FOLD7_512": { name: "갤럭시 / Z폴드7 / 512GB", lgName: "삼성 갤럭시 Z폴드7 (512G)", colors: ["실버 shadow", "핑크", "네이비"] }
+            "S26_256": { name: "갤럭시 S26 (256GB)", lgName: "삼성 갤럭시S26 (256G)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26_512": { name: "갤럭시 S26 (512GB)", lgName: "삼성 갤럭시S26 (512G)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26P_256": { name: "갤럭시 S26+ (256GB)", lgName: "삼성 갤럭시S26+ (256G)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26P_512": { name: "갤럭시 S26+ (512GB)", lgName: "삼성 갤럭시S26+ (512G)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26U_256": { name: "갤럭시 S26 울트라 (256GB)", lgName: "삼성 갤럭시S26 울트라 (256G)", colors: ["블랙", "그레이", "블루", "화이트"] },
+            "S26U_512": { name: "갤럭시 S26 울트라 (512GB)", lgName: "삼성 갤럭시S26 울트라 (512G)", colors: ["블랙", "그레이", "블루", "화이트"] },
+            "S25E_256": { name: "갤럭시 S25 엣지 (256GB)", lgName: "삼성 갤럭시 S25 엣지 (256G)", colors: ["실버", "블루", "블랙"] },
+            "S25E_512": { name: "갤럭시 S25 엣지 (512GB)", lgName: "삼성 갤럭시 S25 엣지 (512G)", colors: ["실버", "블루", "블랙"] },
+            "Z_FLIP7FE_256": { name: "갤럭시 Z플립7 FE (256GB)", lgName: "삼성 갤럭시 Z플립7 FE (256G)", colors: ["민트", "크림", "블랙"] },
+            "Z_FLIP7_256": { name: "갤럭시 Z플립7 (256GB)", lgName: "삼성 갤럭시 Z플립7 (256G)", colors: ["블루", "레드", "블랙"] },
+            "Z_FLIP7_512": { name: "갤럭시 Z플립7 (512GB)", lgName: "삼성 갤럭시 Z플립7 (512G)", colors: ["블루", "레드", "블랙"] },
+            "Z_FOLD7_256": { name: "갤럭시 Z폴드7 (256GB)", lgName: "삼성 갤럭시 Z폴드7 (256G)", colors: ["블루", "실버", "블랙"] },
+            "Z_FOLD7_512": { name: "갤럭시 Z폴드7 (512GB)", lgName: "삼성 갤럭시 Z폴드7 (512G)", colors: ["블루", "실버", "블랙"] }
         };
 
         function setCarrier(carrier, btn) {
@@ -149,16 +186,17 @@
 
         function autoMatchPrice() {
             if (!currentCarrier) return;
+            const type = document.getElementById('contractType').value;
             const model = document.getElementById('modelSelect').value;
             const month = document.getElementById('monthSelect').value;
             
-            // 데이터셋에서 해당하는 가격 찾기 (없으면 공백)
             let matchedPrice = "";
-            if (priceDB[currentCarrier] && priceDB[currentCarrier][month] && priceDB[currentCarrier][month][model]) {
-                matchedPrice = priceDB[currentCarrier][month][model];
-            } else if (priceDB[currentCarrier]["24"] && priceDB[currentCarrier]["24"][model]) {
-                // 30, 36개월 데이터가 없는 통신사는 24개월 기본값 적용
-                matchedPrice = priceDB[currentCarrier]["24"][model];
+            // DB 탐색: 통신사 -> 가입유형 -> 개월수 -> 모델 순
+            if (priceDB[currentCarrier] && priceDB[currentCarrier][type] && priceDB[currentCarrier][type][month] && priceDB[currentCarrier][type][month][model]) {
+                matchedPrice = priceDB[currentCarrier][type][month][model];
+            } else if (priceDB[currentCarrier][type] && priceDB[currentCarrier][type]["24"] && priceDB[currentCarrier][type]["24"][model]) {
+                // 데이터 없는 경우 24개월 기본값
+                matchedPrice = priceDB[currentCarrier][type]["24"][model];
             }
             
             document.getElementById('priceInput').value = matchedPrice;
@@ -168,6 +206,7 @@
         function updateColors() {
             const modelKey = document.getElementById('modelSelect').value;
             const colorSelect = document.getElementById('colorSelect');
+            if(!modelKey) return;
             colorSelect.innerHTML = "";
             modelData[modelKey].colors.forEach(c => {
                 const opt = document.createElement('option');
@@ -179,8 +218,6 @@
         }
 
         function toggleInputs() {
-            const type = document.getElementById('contractType').value;
-            document.getElementById('priceLabel').innerText = (type === "SELECT") ? "월 총 청구요금" : "할부원금";
             updateMsg();
         }
 
@@ -201,7 +238,7 @@
             let msg = "";
 
             if (currentCarrier === 'SKT') {
-                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (할부이자 5.9% 포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${date}\n(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
+                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (할부이자 포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${date}\n(개통월 제외, 6개월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
             } else if (currentCarrier === 'LGU') {
                 msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].lgName} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 6개월 이후 (${date})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw\n5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U\n6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o\n\n유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
             } else if (currentCarrier === 'KT') {
@@ -223,7 +260,7 @@
             let val = target.value.replace(/[^0-9]/g, '');
             if (val.length === 6) {
                 target.setAttribute('data-formatted', `26년 ${parseInt(val.substring(2,4))}월 ${parseInt(val.substring(4,6))}일`);
-                target.setAttribute('data-kt-formatted', `26-${parseInt(val.substring(2,4))}-${parseInt(val.substring(4,6))}`);
+                target.setAttribute('data-kt-formatted', `2026-${val.substring(2,4)}-${val.substring(4,6)}`);
             } else {
                 target.setAttribute('data-formatted', val);
                 target.setAttribute('data-kt-formatted', val);
@@ -233,6 +270,7 @@
 
         function copyText() {
             const text = document.getElementById('msgBox').innerText;
+            if(!text) return;
             navigator.clipboard.writeText(text).then(() => alert("복사되었습니다!"));
         }
     </script>
