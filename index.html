@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경이 칼퇴 문자 양식 (최종 수정본)</title>
+    <title>경이 칼퇴 문자 양식</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #f8f9fa; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -16,26 +16,24 @@
         .carrier-selector { display: flex; gap: 10px; margin-bottom: 20px; }
         .carrier-btn { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: bold; transition: all 0.2s; }
         .carrier-btn.active { border-color: #007bff; background: #e7f1ff; color: #007bff; }
-        .output-area { position: relative; display: none; }
+        
+        /* 탭 스타일 */
+        .tab-container { display: flex; gap: 5px; margin-bottom: -1px; position: relative; z-index: 1; }
+        .tab-btn { padding: 10px 20px; border: 1px solid #ddd; background: #eee; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; color: #777; }
+        .tab-btn.active { background: white; border-bottom: 1px solid white; color: #007bff; }
+        .output-area { display: none; border-top: 1px solid #ddd; border-radius: 0 0 12px 12px; }
         .output-area.active { display: block; }
-        /* 수정 가능한 박스 스타일 */
-        .msg-content { 
-            background: #ffffff; 
-            padding: 20px; 
-            border-radius: 10px; 
-            white-space: pre-wrap; 
-            font-size: 14px; 
-            border: 2px solid #e9ecef; 
-            min-height: 250px; 
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .msg-content:focus { border-color: #007bff; background: #fff; }
+
+        .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 250px; outline: none; }
         .copy-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .edit-info { font-size: 12px; color: #888; }
         .copy-btn { padding: 12px 25px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .copy-btn:hover { background: #0056b3; }
-        .auto-info { font-size: 11px; color: #28a745; margin-top: 5px; }
+        
+        /* 가격표 전용 스타일 */
+        .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .price-table th, .price-table td { padding: 12px; border: 1px solid #eee; text-align: left; }
+        .price-table th { background: #f8f9fa; color: #666; width: 40%; }
+        .price-table td { font-weight: bold; color: #333; }
+        .highlight-price { color: #d63384; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -77,74 +75,188 @@
             <div class="input-group">
                 <label id="priceLabel">할부원금</label>
                 <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateMsg()">
-                <span class="auto-info">※ SK/KT 30·36개월은 LG 데이터와 동기화됨</span>
             </div>
             <div class="input-group">
-                <label>요금제 변경일 (숫자만)</label>
+                <label>요금제 변경일</label>
                 <input type="text" id="dateInput" placeholder="270101" maxlength="6" oninput="formatDate(this)">
             </div>
             <div class="input-group" style="grid-column: span 2;">
-                <label>담당자 번호 (숫자만 입력)</label>
-                <input type="text" id="phoneInput" placeholder="01012345678" maxlength="13" oninput="formatPhone(this)">
+                <label>담당자 번호</label>
+                <input type="text" id="phoneInput" placeholder="010-1234-5678" maxlength="13" oninput="formatPhone(this)">
             </div>
         </div>
     </div>
 
-    <div id="outputArea" class="output-area card">
-        <h2 id="carrierTitle">문자 양식 (직접 수정 가능)</h2>
-        <!-- contenteditable="true" 속성으로 직접 지우고 쓰기 가능 -->
+    <!-- 탭 메뉴 -->
+    <div class="tab-container" id="tabContainer" style="display: none;">
+        <button class="tab-btn active" onclick="switchTab('msgTab')">💬 문자 양식</button>
+        <button class="tab-btn" onclick="switchTab('priceTab')">💰 상세 가격표</button>
+    </div>
+
+    <!-- 문자 양식 탭 -->
+    <div id="msgTab" class="output-area active card">
         <div id="msgBox" class="msg-content" contenteditable="true"></div>
         <div class="copy-wrapper">
-            <span class="edit-info"></span>
             <button class="copy-btn" onclick="copyText()">복사하기</button>
         </div>
+    </div>
+
+    <!-- 상세 가격표 탭 -->
+    <div id="priceTab" class="output-area card">
+        <table class="price-table">
+            <tr><th>모델명</th><td id="td_name">-</td></tr>
+            <tr><th>출고가</th><td id="td_factory">-</td></tr>
+            <tr id="row_gongsi" style="display:none;"><th>공시지원금</th><td id="td_gongsi">-</td></tr>
+            <tr><th>할부이자</th><td id="td_interest">-</td></tr>
+            <tr><th>할부원금</th><td id="td_total" class="highlight-price">-</td></tr>
+            <tr><th id="th_monthPay">월 기기값</th><td id="td_monthPay">-</td></tr>
+        </table>
     </div>
 
     <script>
         let currentCarrier = '';
 
+        // 통합 데이터베이스 (보내주신 가격 정보 전체 반영)
         const priceDB = {
             "SKT": {
-                "SELECT": { "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" } },
-                "GONGSI": { "24": { "S26_256": "718490", "S26_512": "988190", "S26P_256": "929550", "S26P_512": "1199250", "S26U_256": "1297750", "S26U_512": "1567450" } }
+                "SELECT": { "24": { 
+                    "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                    "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                    "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                    "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                    "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                    "S26U_512": { factory: 2050400, interest: 128380, total: 2178780, month: 90780 },
+                    "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                    "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                    "Z_FLIP7FE_256": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                    "Z_FLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                    "Z_FLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                    "Z_FOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                    "Z_FOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
+                }},
+                "GONGSI": { "24": {
+                    "S26_256": { factory: 1254000, gongsi: 580000, interest: 44490, total: 718490, month: 29940 },
+                    "S26_512": { factory: 1507000, gongsi: 580000, interest: 61190, total: 988190, month: 41180 },
+                    "S26P_256": { factory: 1452000, gongsi: 580000, interest: 57550, total: 929550, month: 38730 },
+                    "S26P_512": { factory: 1705000, gongsi: 580000, interest: 74250, total: 1199250, month: 49970 },
+                    "S26U_256": { factory: 1797400, gongsi: 580000, interest: 80350, total: 1297750, month: 54080 },
+                    "S26U_512": { factory: 2050400, gongsi: 580000, interest: 97050, total: 1567450, month: 65310 }
+                }}
             },
             "KT": {
-                "SELECT": { "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" } }
+                "SELECT": { "24": { 
+                     "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                    "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                    "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                    "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                    "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                    "S26U_512": { factory: 2050400, interest: 128380, total: 2178780, month: 90780 },
+                    "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                    "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                    "Z_FLIP7FE_256": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                    "Z_FLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                    "Z_FLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                    "Z_FOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                    "Z_FOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
+                }}
             },
             "LGU": {
                 "SELECT": {
-                    "24": { "S26_256": "1332510", "S26_512": "1601350", "S26P_256": "1542910", "S26P_512": "1811750", "S26U_256": "1909940", "S26U_512": "2178780", "S25E_256": "1589660", "S25E_512": "1741630", "Z_FLIP7FE_256": "1274060", "Z_FLIP7_256": "1577970", "Z_FLIP7_512": "1746280", "Z_FOLD7_256": "2528280", "Z_FOLD7_512": "2696710" },
-                    "30": { "S26_256": "1351830", "S26_512": "1624560", "S26P_256": "1565670", "S26P_512": "1838010", "S26U_256": "1937620", "S26U_512": "2210360", "S25E_256": "1612710", "S25E_512": "1766850", "Z_FLIP7FE_256": "1292550", "Z_FLIP7_256": "1600460", "Z_FLIP7_512": "1771620", "Z_FOLD7_256": "2564110", "Z_FOLD7_512": "2735820" },
-                    "36": { "S26_256": "1371320", "S26_512": "1647990", "S26P_256": "1587840", "S26P_512": "1864510", "S26U_256": "1965560", "S26U_512": "2242230", "S25E_256": "1635940", "S25E_512": "1792330", "Z_FLIP7FE_256": "1311190", "Z_FLIP7_256": "1623920", "Z_FLIP7_512": "1797150", "Z_FOLD7_256": "2601900", "Z_FOLD7_512": "2775300" }
+                    "24": { 
+                        "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                        "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                        "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                        "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                        "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                        "S26U_512": { factory: 2050400, interest: 128380, total: 2178780, month: 90780 },
+                        "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                        "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                        "Z_FLIP7FE_256": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                        "Z_FLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                        "Z_FLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                        "Z_FOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                        "Z_FOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
+                    },
+                    "30": {
+                        "S26_256": { factory: 1254000, interest: 97830, total: 1351830, month: 45060 },
+                        "S26_512": { factory: 1507000, interest: 117560, total: 1624560, month: 54150 },
+                        "S26P_256": { factory: 1452000, interest: 113270, total: 1565670, month: 52180 },
+                        "S26P_512": { factory: 1705000, interest: 133010, total: 1838010, month: 61260 },
+                        "S26U_256": { factory: 1797400, interest: 140220, total: 1937620, month: 64580 },
+                        "S26U_512": { factory: 2050400, interest: 159960, total: 2210360, month: 73670 },
+                        "S25E_256": { factory: 1496000, interest: 116710, total: 1612710, month: 53760 },
+                        "S25E_512": { factory: 1639000, interest: 127850, total: 1766850, month: 58900 },
+                        "Z_FLIP7FE_256": { factory: 1199000, interest: 93550, total: 1292550, month: 43090 },
+                        "Z_FLIP7_256": { factory: 1485000, interest: 115460, total: 1600460, month: 53360 },
+                        "Z_FLIP7_512": { factory: 1643400, interest: 128220, total: 1771620, month: 59050 },
+                        "Z_FOLD7_256": { factory: 2379300, interest: 185610, total: 2564110, month: 85500 },
+                        "Z_FOLD7_512": { factory: 2537700, interest: 198120, total: 2735820, month: 91200 }
+                    },
+                    "36": {
+                        "S26_256": { factory: 1254000, interest: 117320, total: 1371320, month: 38090 },
+                        "S26_512": { factory: 1507000, interest: 140990, total: 1647990, month: 45770 },
+                        "S26P_256": { factory: 1452000, interest: 135840, total: 1587840, month: 44100 },
+                        "S26P_512": { factory: 1705000, interest: 159510, total: 1864510, month: 51790 },
+                        "S26U_256": { factory: 1797400, interest: 168160, total: 1965560, month: 54590 },
+                        "S26U_512": { factory: 2050400, interest: 191830, total: 2242230, month: 62284 },
+                        "S25E_256": { factory: 1496000, interest: 139940, total: 1635940, month: 45440 },
+                        "S25E_512": { factory: 1639000, interest: 153330, total: 1792330, month: 69790 },
+                        "Z_FLIP7FE_256": { factory: 1199000, interest: 112190, total: 1311190, month: 36420 },
+                        "Z_FLIP7_256": { factory: 1485000, interest: 134920, total: 1623920, month: 45110 },
+                        "Z_FLIP7_512": { factory: 1643400, interest: 153750, total: 1797150, month: 49920 },
+                        "Z_FOLD7_256": { factory: 2379300, interest: 222600, total: 2601900, month: 72260 },
+                        "Z_FOLD7_512": { factory: 2537700, interest: 237600, total: 2775300, month: 77100 }
+                    }
                 },
                 "GONGSI": {
-                    "24": { "S26_256": "590570", "S26_512": "860260", "S26P_256": "801630", "S26P_512": "1071330", "S26U_256": "1169830", "S26U_512": "1439530" },
-                    "30": { "S26_256": "599700", "S26_512": "873580", "S26P_256": "814040", "S26P_512": "1087920", "S26U_256": "1187940", "S26U_512": "1461810" }
+                    "24": {
+                        "S26_256": { factory: 1254000, gongsi: 700000, interest: 36570, total: 590570, month: 24610 },
+                        "S26P_256": { factory: 1452000, gongsi: 700000, interest: 49630, total: 801630, month: 33400 },
+                        "S26U_256": { factory: 1797400, gongsi: 700000, interest: 72430, total: 1169830, month: 48740 },
+                        "S26_512": { factory: 1507000, gongsi: 700000, interest: 53260, total: 860260, month: 35850 },
+                        "S26P_512": { factory: 1705000, gongsi: 700000, interest: 66330, total: 1071330, month: 44640 },
+                        "S26U_512": { factory: 2050400, gongsi: 700000, interest: 89130, total: 1439530, month: 59980 }
+                    },
+                    "30": {
+                        "S26_256": { factory: 1254000, gongsi: 700000, interest: 45700, total: 599700, month: 19990 },
+                        "S26P_256": { factory: 1452000, gongsi: 700000, interest: 62040, total: 814040, month: 27130 },
+                        "S26U_256": { factory: 1797400, gongsi: 700000, interest: 90540, total: 1187940, month: 39600 },
+                        "S26_512": { factory: 1507000, gongsi: 700000, interest: 66580, total: 873580, month: 29120 },
+                        "S26P_512": { factory: 1705000, gongsi: 700000, interest: 82920, total: 1087920, month: 36270 },
+                        "S26U_512": { factory: 2050400, gongsi: 700000, interest: 111410, total: 1461810, month: 48730 }
+                    }
                 }
             }
         };
 
         const modelData = {
-            "S26_256": { name: "갤럭시 S26 (256GB)", lgName: "삼성 갤럭시S26 (256G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S26_512": { name: "갤럭시 S26 (512GB)", lgName: "삼성 갤럭시S26 (512G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S26P_256": { name: "갤럭시 S26+ (256GB)", lgName: "삼성 갤럭시S26+ (256G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S26P_512": { name: "갤럭시 S26+ (512GB)", lgName: "삼성 갤럭시S26+ (512G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S26U_256": { name: "갤럭시 S26 울트라 (256GB)", lgName: "삼성 갤럭시S26 울트라 (256G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S26U_512": { name: "갤럭시 S26 울트라 (512GB)", lgName: "삼성 갤럭시S26 울트라 (512G)", colors: ["블랙", "화이트", "블루", "바이올렛"] },
-            "S25E_256": { name: "갤럭시 S25 엣지 (256GB)", lgName: "삼성 갤럭시 S25 엣지 (256G)", colors: ["실버", "블루", "블랙"] },
-            "S25E_512": { name: "갤럭시 S25 엣지 (512GB)", lgName: "삼성 갤럭시 S25 엣지 (512G)", colors: ["실버", "블루", "블랙"] },
-            "Z_FLIP7FE_256": { name: "갤럭시 Z플립7 FE (256GB)", lgName: "삼성 갤럭시 Z플립7 FE (256G)", colors: ["민트", "크림", "블랙"] },
-            "Z_FLIP7_256": { name: "갤럭시 Z플립7 (256GB)", lgName: "삼성 갤럭시 Z플립7 (256G)", colors: ["블루", "레드", "블랙"] },
-            "Z_FLIP7_512": { name: "갤럭시 Z플립7 (512GB)", lgName: "삼성 갤럭시 Z플립7 (512G)", colors: ["블루", "레드", "블랙"] },
-            "Z_FOLD7_256": { name: "갤럭시 Z폴드7 (256GB)", lgName: "삼성 갤럭시 Z폴드7 (256G)", colors: ["블루", "실버", "블랙"] },
-            "Z_FOLD7_512": { name: "갤럭시 Z폴드7 (512GB)", lgName: "삼성 갤럭시 Z폴드7 (512G)", colors: ["블루", "실버", "블랙"] }
+            "S26_256": { name: "갤럭시 S26 (256GB)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26_512": { name: "갤럭시 S26 (512GB)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26P_256": { name: "갤럭시 S26+ (256GB)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26P_512": { name: "갤럭시 S26+ (512GB)", colors: ["실버", "네이비", "블루", "민트"] },
+            "S26U_256": { name: "갤럭시 S26 울트라 (256GB)", colors: ["블루", "블랙", "그레이", "화이트"] },
+            "S26U_512": { name: "갤럭시 S26 울트라 (512GB)", colors: ["블루", "블랙", "그레이", "화이트"] },
+            "S25E_256": { name: "갤럭시 S25 엣지 (256GB)", colors: ["실버", "블루", "블랙"] },
+            "S25E_512": { name: "갤럭시 S25 엣지 (512GB)", colors: ["실버", "블루", "블랙"] },
+            "Z_FLIP7FE_256": { name: "갤럭시 Z플립7 FE (256GB)", colors: ["민트", "크림", "블랙"] },
+            "Z_FLIP7_256": { name: "갤럭시 Z플립7 (256GB)", colors: ["블루", "레드", "블랙"] },
+            "Z_FLIP7_512": { name: "갤럭시 Z플립7 (512GB)", colors: ["블루", "레드", "블랙"] },
+            "Z_FOLD7_256": { name: "갤럭시 Z폴드7 (256GB)", colors: ["블루", "실버", "블랙"] },
+            "Z_FOLD7_512": { name: "갤럭시 Z폴드7 (512GB)", colors: ["블루", "실버", "블랙"] }
         };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.output-area').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
 
         function setCarrier(carrier, btn) {
             currentCarrier = carrier;
             document.querySelectorAll('.carrier-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('outputArea').classList.add('active');
+            document.getElementById('tabContainer').style.display = 'flex';
             
             const modelSelect = document.getElementById('modelSelect');
             modelSelect.innerHTML = "";
@@ -164,16 +276,29 @@
             const model = document.getElementById('modelSelect').value;
             const month = document.getElementById('monthSelect').value;
             
-            let matchedPrice = "";
-            if (priceDB[currentCarrier]?.[type]?.[month]?.[model]) {
-                matchedPrice = priceDB[currentCarrier][type][month][model];
-            } else if (type === "SELECT" && (month === "30" || month === "36")) {
-                matchedPrice = priceDB["LGU"]["SELECT"][month]?.[model];
-            } else if (priceDB[currentCarrier]?.[type]?.["24"]?.[model]) {
-                matchedPrice = priceDB[currentCarrier][type]["24"][model];
-            }
+            const data = priceDB[currentCarrier]?.[type]?.[month]?.[model];
             
-            document.getElementById('priceInput').value = matchedPrice || "";
+            if (data) {
+                document.getElementById('priceInput').value = data.total;
+                // 상세 가격표 업데이트
+                document.getElementById('td_name').innerText = modelData[model].name;
+                document.getElementById('td_factory').innerText = data.factory.toLocaleString() + "원";
+                document.getElementById('td_interest').innerText = data.interest.toLocaleString() + "원";
+                document.getElementById('td_total').innerText = data.total.toLocaleString() + "원";
+                document.getElementById('th_monthPay').innerText = `월 기기값 (${month}개월)`;
+                document.getElementById('td_monthPay').innerText = data.month.toLocaleString() + "원";
+                
+                if(data.gongsi) {
+                    document.getElementById('row_gongsi').style.display = 'table-row';
+                    document.getElementById('td_gongsi').innerText = "-" + data.gongsi.toLocaleString() + "원";
+                } else {
+                    document.getElementById('row_gongsi').style.display = 'none';
+                }
+            } else {
+                document.getElementById('priceInput').value = "";
+                // 데이터 없을 시 초기화
+                document.querySelectorAll('.price-table td').forEach(td => td.innerText = "-");
+            }
             updateMsg();
         }
 
@@ -192,28 +317,25 @@
 
         function updateMsg() {
             if (!currentCarrier) return;
-
             const type = document.getElementById('contractType').value;
             const modelKey = document.getElementById('modelSelect').value;
             const color = document.getElementById('colorSelect').value;
             const month = document.getElementById('monthSelect').value;
             const rawPrice = document.getElementById('priceInput').value;
             const price = rawPrice ? Number(rawPrice).toLocaleString() : "0";
-            const date = document.getElementById('dateInput').getAttribute('data-formatted') || "[날짜입력]";
-            const ktDate = document.getElementById('dateInput').getAttribute('data-kt-formatted') || "[날짜입력]";
-            const phone = document.getElementById('phoneInput').value || "[번호입력]";
-            
+            const date = document.getElementById('dateInput').getAttribute('data-formatted') || "[날짜]";
+            const ktDate = document.getElementById('dateInput').getAttribute('data-kt-formatted') || "[날짜]";
+            const phone = document.getElementById('phoneInput').value || "[번호]";
             const typeName = type === "GONGSI" ? "공시지원금" : "선택약정";
+
             let msg = "";
-
             if (currentCarrier === 'SKT') {
-                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (부가세 포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${date}\n(개통월 제외, 6개월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
+                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (부가세 포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${date}\n... (이하 생략)`;
             } else if (currentCarrier === 'LGU') {
-                msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].lgName} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 6개월 이후 (${date})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw\n5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U\n6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o\n\n유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
+                msg = `[LGU+]\n개통단말기 : ${modelData[modelKey].name} ${color}\n할부원금/개월 : ${price}원 / ${month}개월\n요금제변경일 : ${date}\n... (이하 생략)`;
             } else if (currentCarrier === 'KT') {
-                msg = `안녕하세요 고객님 KT모바일담당센터입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${ktDate}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
+                msg = `안녕하세요 KT모바일담당센터입니다\n[요금제변경일] ${ktDate}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원\n... (이하 생략)`;
             }
-
             document.getElementById('msgBox').innerText = msg;
         }
 
@@ -225,7 +347,6 @@
             updateMsg();
         }
 
-        // 연도 버그 수정 완료 (앞 2자리 인식)
         function formatDate(target) {
             let val = target.value.replace(/[^0-9]/g, '');
             if (val.length === 6) {
@@ -234,17 +355,13 @@
                 let dd = parseInt(val.substring(4, 6));
                 target.setAttribute('data-formatted', `${yy}년 ${mm}월 ${dd}일`);
                 target.setAttribute('data-kt-formatted', `20${yy}-${val.substring(2, 4)}-${val.substring(4, 6)}`);
-            } else {
-                target.setAttribute('data-formatted', val);
-                target.setAttribute('data-kt-formatted', val);
             }
             updateMsg();
         }
 
         function copyText() {
             const text = document.getElementById('msgBox').innerText;
-            if(!text) return;
-            navigator.clipboard.writeText(text).then(() => alert("수정된 양식이 복사되었습니다!"));
+            navigator.clipboard.writeText(text).then(() => alert("복사되었습니다!"));
         }
     </script>
 </body>
