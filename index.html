@@ -64,7 +64,7 @@
             <div class="input-group">
                 <label id="priceLabel">할부원금</label>
                 <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateMsg()">
-                <span class="auto-info">※ 최신 할부원금 DB 자동 매칭 완료</span>
+                <span class="auto-info">※ SK/KT 30·36개월은 LG 데이터와 동기화됨</span>
             </div>
             <div class="input-group">
                 <label>요금제 변경일 (숫자만)</label>
@@ -88,7 +88,6 @@
     <script>
         let currentCarrier = '';
 
-        // 전송해주신 데이터 정밀 반영
         const priceDB = {
             "SKT": {
                 "SELECT": {
@@ -184,6 +183,7 @@
             updateColors();
         }
 
+        // 수정된 핵심 로직: SK/KT도 30/36개월 선택 시 LG 데이터 참조
         function autoMatchPrice() {
             if (!currentCarrier) return;
             const type = document.getElementById('contractType').value;
@@ -191,15 +191,21 @@
             const month = document.getElementById('monthSelect').value;
             
             let matchedPrice = "";
-            // DB 탐색: 통신사 -> 가입유형 -> 개월수 -> 모델 순
-            if (priceDB[currentCarrier] && priceDB[currentCarrier][type] && priceDB[currentCarrier][type][month] && priceDB[currentCarrier][type][month][model]) {
+
+            // 1. 해당 통신사 전용 데이터가 있는지 먼저 확인
+            if (priceDB[currentCarrier]?.[type]?.[month]?.[model]) {
                 matchedPrice = priceDB[currentCarrier][type][month][model];
-            } else if (priceDB[currentCarrier][type] && priceDB[currentCarrier][type]["24"] && priceDB[currentCarrier][type]["24"][model]) {
-                // 데이터 없는 경우 24개월 기본값
+            } 
+            // 2. 데이터가 없는 경우(SK/KT) 선택약정 30/36개월이면 LG 데이터 강제 매칭
+            else if (type === "SELECT" && (month === "30" || month === "36")) {
+                matchedPrice = priceDB["LGU"]["SELECT"][month]?.[model];
+            }
+            // 3. 마지막 수단으로 각 통신사의 24개월 데이터 참조
+            else if (priceDB[currentCarrier]?.[type]?.["24"]?.[model]) {
                 matchedPrice = priceDB[currentCarrier][type]["24"][model];
             }
             
-            document.getElementById('priceInput').value = matchedPrice;
+            document.getElementById('priceInput').value = matchedPrice || "";
             updateMsg();
         }
 
