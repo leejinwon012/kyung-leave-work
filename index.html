@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경이 칼퇴 문자 양식 (최종 통합본)</title>
+    <title>경이 칼퇴 문자 양식</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #f8f9fa; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -23,7 +23,7 @@
         .output-area { display: none; border-top: 1px solid #ddd; border-radius: 0 0 12px 12px; }
         .output-area.active { display: block; }
 
-        .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 450px; outline: none; line-height: 1.5; margin-bottom: 10px; }
+        .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 250px; outline: none; line-height: 1.5; margin-bottom: 10px; }
         .copy-wrapper { display: flex; justify-content: flex-end; margin-bottom: 10px; }
         .copy-btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
         
@@ -105,7 +105,7 @@
         <button class="tab-btn" onclick="switchTab('adminTab', event)">📋 관리콜/악세서리</button>
     </div>
 
-    <!-- 1. 개통 문자 (기존 양식 완벽 복구) -->
+    <!-- 1. 개통 문자 (기존 유지) -->
     <div id="msgTab" class="output-area active card">
         <div id="msgBox" class="msg-content" contenteditable="true"></div>
         <div class="copy-wrapper">
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- 2. 가격표 (기존 DB 기반) -->
+    <!-- 2. 가격표 (기존 유지) -->
     <div id="priceTab" class="output-area card">
         <table class="price-table">
             <tr><th>모델명</th><td id="td_name">-</td></tr>
@@ -125,18 +125,48 @@
         </table>
     </div>
 
-    <!-- 3. 관리콜 / 악세서리 (요청하신 자동 생성 기능) -->
+    <!-- 3. 관리콜 / 악세서리 (수정된 전용 페이지) -->
     <div id="adminTab" class="output-area card">
         <div class="admin-box">
-            <span class="admin-title">관리콜 자동 생성</span>
+            <span class="admin-title">관리콜 상세 설정</span>
             <div class="input-grid">
-                <div class="input-group"><label>변경 요금제</label><input type="text" id="targetPlan" value="5G 미니" oninput="updateAdminMsg()"></div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>양식 선택</label>
+                    <select id="callFormType" onchange="updateAdminMsg()">
+                        <option value="1차">1차 관리콜이력</option>
+                        <option value="일반">관리콜이력</option>
+                    </select>
+                </div>
                 <div class="input-group">
-                    <label>중고폰 반납 여부</label>
+                    <label>변경 요금제</label>
+                    <input type="text" id="targetPlan" value="5G 미니" oninput="updateAdminMsg()">
+                </div>
+                <div class="input-group">
+                    <label>중고폰 반납</label>
                     <select id="returnYn" onchange="updateAdminMsg()">
-                        <option value="Y (방문수령 접수건)">Y (방문수령)</option>
-                        <option value="Y (택배 반납)">Y (택배)</option>
+                        <option value="Y">Y</option>
+                        <option value="N" selected>N</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>반납안내여부</label>
+                    <select id="guideYn" onchange="updateAdminMsg()">
+                        <option value="Y" selected>Y</option>
                         <option value="N">N</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>건식업셀결과</label>
+                    <select id="upcellResult" onchange="updateAdminMsg()">
+                        <option value="미대상" selected>미대상</option>
+                        <option value="대상">대상</option>
+                    </select>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>유심인식여부</label>
+                    <select id="usimYn" onchange="updateAdminMsg()">
+                        <option value="Y">Y</option>
+                        <option value="N" selected>N</option>
                     </select>
                 </div>
             </div>
@@ -145,11 +175,17 @@
         </div>
 
         <div class="admin-box">
-            <span class="admin-title">악세서리 주문 자동 생성</span>
-            <div class="input-group"><label>지점명</label><input type="text" id="branch" value="크로바둔산 1지점" oninput="updateAdminMsg()"></div>
+            <span class="admin-title">악세서리 주문 상세 설정</span>
+            <div class="input-group">
+                <label>지점명 선택</label>
+                <select id="branch" onchange="updateAdminMsg()">
+                    <option value="크로바둔산 1지점">크로바둔산 1지점</option>
+                    <option value="크로바둔산 2지점">크로바둔산 2지점</option>
+                </select>
+            </div>
             <div class="input-group"><label>배송 주소</label><input type="text" id="address" placeholder="주소를 입력하세요" oninput="updateAdminMsg()"></div>
             <div class="input-group">
-                <label>품목 선택</label>
+                <label>품목 선택 (중복 선택 가능)</label>
                 <div class="chip-container">
                     <div class="chip selected" onclick="toggleAcc(this)">투명케이스</div>
                     <div class="chip selected" onclick="toggleAcc(this)">강화필름지</div>
@@ -295,18 +331,30 @@
             document.getElementById('msgBox').innerText = msg;
         }
 
+        // 수정된 관리콜/악세서리 생성 로직
         function updateAdminMsg() {
             const user = document.getElementById('userName').value || "[고객명]";
             const staff = document.getElementById('staffName').value || "[담당자]";
             const phone = document.getElementById('phoneInput').value || "[연락처]";
             const plan = document.getElementById('targetPlan').value;
             const ret = document.getElementById('returnYn').value;
-            const carrier = currentCarrier || "LG";
-            const date = document.getElementById('dateInput').value.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') || "[날짜]";
+            const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
+            
+            // 변경일 포맷팅
+            const rawDate = document.getElementById('dateInput').value;
+            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
 
-            const callMsg = `[1차 관리콜이력]\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrier}\n- 고객연락처 : ${phone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 :  ${ret}\n- 반납안내여부 : Y\n- 건식업셀결과 : 미대상\n- 유심인식여부 : N\n--------------------------\n[관리콜이력]\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrier}\n- 고객연락처 : ${phone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 :  ${ret}\n- 반납안내여부 : Y\n- 건식업셀결과 : 미대상\n- 유심인식여부 : N`;
+            // 관리콜 추가 항목
+            const formType = document.getElementById('callFormType').value;
+            const title = formType === '1차' ? '[1차 관리콜이력]' : '[관리콜이력]';
+            const guide = document.getElementById('guideYn').value;
+            const upcell = document.getElementById('upcellResult').value;
+            const usim = document.getElementById('usimYn').value;
+
+            const callMsg = `${title}\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${phone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
             document.getElementById('callResult').innerText = callMsg;
 
+            // 악세서리 
             const br = document.getElementById('branch').value;
             const addr = document.getElementById('address').value || "[주소 입력]";
             const model = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
