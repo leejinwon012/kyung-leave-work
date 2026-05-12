@@ -11,7 +11,7 @@
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #666; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background-color: #fff; }
         input:focus { border-color: #007bff; }
         .carrier-selector { display: flex; gap: 10px; margin-bottom: 20px; }
         .carrier-btn { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: bold; transition: all 0.2s; }
@@ -22,6 +22,7 @@
         .copy-wrapper { display: flex; justify-content: flex-end; margin-top: 10px; }
         .copy-btn { padding: 12px 25px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .copy-btn:hover { background: #0056b3; }
+        .auto-info { font-size: 11px; color: #28a745; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -46,30 +47,24 @@
             </div>
             <div class="input-group">
                 <label>모델 및 용량</label>
-                <select id="modelSelect" onchange="updateColors(); updateMsg();"></select>
+                <select id="modelSelect" onchange="autoMatchPrice(); updateColors();"></select>
+            </div>
+            <div class="input-group">
+                <label>할부 개월</label>
+                <select id="monthSelect" onchange="autoMatchPrice()">
+                    <option value="24">24개월</option>
+                    <option value="30">30개월</option>
+                    <option value="36">36개월</option>
+                </select>
             </div>
             <div class="input-group">
                 <label>색상 선택</label>
                 <select id="colorSelect" onchange="updateMsg()"></select>
             </div>
             <div class="input-group">
-                <label>할부 개월</label>
-                <select id="monthSelect" onchange="updateMsg()">
-                    <option value="24">24개월</option>
-                    <option value="30">30개월</option>
-                    <option value="36">36개월</option>
-                </select>
-            </div>
-            <div id="priceGroup" class="input-group">
-                <label id="priceLabel">할부원금/납부금 (숫자만)</label>
-                <input type="text" id="priceInput" placeholder="예: 590570" oninput="updateMsg()">
-            </div>
-            <div id="policyGroup" class="input-group" style="display:none;">
-                <label>공시지원금 정책 (데이터 참조용)</label>
-                <select id="policySelect" onchange="applyGongsi()">
-                    <option value="">직접 입력</option>
-                    <option value="70">공시 70만 원</option>
-                </select>
+                <label id="priceLabel">할부원금/납부금</label>
+                <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateMsg()">
+                <span class="auto-info">※ 모델 선택 시 데이터 기반 자동 매칭</span>
             </div>
             <div class="input-group">
                 <label>요금제 변경일 (숫자만)</label>
@@ -93,6 +88,36 @@
     <script>
         let currentCarrier = '';
 
+        // 1:1 매칭 데이터셋 (제공해주신 엑셀 기반)
+        const priceDB = {
+            "SKT": {
+                "24": {
+                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
+                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                }
+            },
+            "KT": {
+                "24": {
+                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
+                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                }
+            },
+            "LGU": {
+                "24": {
+                    "S26_256": "1332510", "S26_512": "1468110", "S26P_256": "1543860", 
+                    "S26P_512": "1679460", "S26U_256": "1940960", "S26U_512": "2178780", "Z_FLIP7_256": "1665480"
+                },
+                "30": {
+                    "S26_256": "1372500", "S26_512": "1512120", "S26P_256": "1590120", 
+                    "S26P_512": "1729740", "S26U_256": "1999110", "S26U_512": "2244090", "Z_FLIP7_256": "1715310", "Z_FOLD7_512": "2735820"
+                },
+                "36": {
+                    "S26_256": "1412496", "S26_512": "1556136", "S26P_256": "1587840", 
+                    "S26P_512": "1780020", "S26U_256": "2057268", "S26U_512": "2309424", "Z_FLIP7_256": "1765152"
+                }
+            }
+        };
+
         const modelData = {
             "S26_256": { name: "갤럭시 / S26 / 256GB", lgName: "삼성 갤럭시S26 (256G)", colors: ["실버", "네이비", "블루", "민트"] },
             "S26_512": { name: "갤럭시 / S26 / 512GB", lgName: "삼성 갤럭시S26 (512G)", colors: ["실버", "네이비", "블루", "민트"] },
@@ -100,14 +125,8 @@
             "S26P_512": { name: "갤럭시 / S26+ / 512GB", lgName: "삼성 갤럭시S26+ (512G)", colors: ["실버", "네이비", "블루", "민트"] },
             "S26U_256": { name: "갤럭시 / S26울트라 / 256GB", lgName: "삼성 갤럭시S26울트라 (256G)", colors: ["티타늄 블랙", "티타늄 그레이", "티타늄 실버", "티타늄 블루"] },
             "S26U_512": { name: "갤럭시 / S26울트라 / 512GB", lgName: "삼성 갤럭시S26울트라 (512G)", colors: ["티타늄 블랙", "티타늄 그레이", "티타늄 실버", "티타늄 블루"] },
-            "Z_FLIP7_256": { name: "갤럭시 / Z플립7 / 256GB", lgName: "삼성 갤럭시 Z플립7 (256G)", colors: ["블루", "옐로우", "민트", "그라파이트"] }
-        };
-
-        const gongsiDB = {
-            "70": {
-                "24": { "S26_256": "590,570", "S26_512": "860,260", "S26P_256": "801,630", "S26P_512": "1,071,330", "S26U_256": "1,169,830", "S26U_512": "1,439,530" },
-                "30": { "S26_256": "599,700", "S26_512": "873,580", "S26P_256": "814,040", "S26P_512": "1,087,920", "S26U_256": "1,187,940", "S26U_512": "1,461,810" }
-            }
+            "Z_FLIP7_256": { name: "갤럭시 / Z플립7 / 256GB", lgName: "삼성 갤럭시 Z플립7 (256G)", colors: ["블루", "옐로우", "민트", "그라파이트"] },
+            "Z_FOLD7_512": { name: "갤럭시 / Z폴드7 / 512GB", lgName: "삼성 갤럭시 Z폴드7 (512G)", colors: ["실버 shadow", "핑크", "네이비"] }
         };
 
         function setCarrier(carrier, btn) {
@@ -124,7 +143,25 @@
                 opt.innerText = modelData[key].name;
                 modelSelect.appendChild(opt);
             });
+            autoMatchPrice();
             updateColors();
+        }
+
+        function autoMatchPrice() {
+            if (!currentCarrier) return;
+            const model = document.getElementById('modelSelect').value;
+            const month = document.getElementById('monthSelect').value;
+            
+            // 데이터셋에서 해당하는 가격 찾기 (없으면 공백)
+            let matchedPrice = "";
+            if (priceDB[currentCarrier] && priceDB[currentCarrier][month] && priceDB[currentCarrier][month][model]) {
+                matchedPrice = priceDB[currentCarrier][month][model];
+            } else if (priceDB[currentCarrier]["24"] && priceDB[currentCarrier]["24"][model]) {
+                // 30, 36개월 데이터가 없는 통신사는 24개월 기본값 적용
+                matchedPrice = priceDB[currentCarrier]["24"][model];
+            }
+            
+            document.getElementById('priceInput').value = matchedPrice;
             updateMsg();
         }
 
@@ -138,22 +175,12 @@
                 opt.innerText = c;
                 colorSelect.appendChild(opt);
             });
+            updateMsg();
         }
 
         function toggleInputs() {
             const type = document.getElementById('contractType').value;
-            document.getElementById('policyGroup').style.display = (type === "GONGSI") ? "flex" : "none";
-            document.getElementById('priceLabel').innerText = (type === "SELECT") ? "월 총 청구요금 (숫자만)" : "할부원금 (숫자만)";
-            updateMsg();
-        }
-
-        function applyGongsi() {
-            const policy = document.getElementById('policySelect').value;
-            const month = document.getElementById('monthSelect').value;
-            const model = document.getElementById('modelSelect').value;
-            if (policy && gongsiDB[policy][month][model]) {
-                document.getElementById('priceInput').value = gongsiDB[policy][month][model].replace(/,/g, '');
-            }
+            document.getElementById('priceLabel').innerText = (type === "SELECT") ? "월 총 청구요금" : "할부원금";
             updateMsg();
         }
 
@@ -174,11 +201,11 @@
             let msg = "";
 
             if (currentCarrier === 'SKT') {
-                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${type === 'GONGSI' ? price : '0'}원 (부가세포함)\n - 약정기간 : ${month}개월 \n - 요금제변경일 : ${date}\n(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
+                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (할부이자 5.9% 포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${date}\n(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
             } else if (currentCarrier === 'LGU') {
                 msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].lgName} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 6개월 이후 (${date})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw\n5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U\n6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o\n\n유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
             } else if (currentCarrier === 'KT') {
-                msg = `안녕하세요 고객님 KT모바일담당자입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${ktDate}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] ${month}개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
+                msg = `안녕하세요 고객님 KT모바일담당자입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${ktDate}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (할부이자 포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
             }
 
             document.getElementById('msgBox').innerText = msg;
