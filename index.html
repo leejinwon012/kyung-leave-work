@@ -3,98 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>할부 이자 계산기</title>
+    <title>경이 칼퇴 문자 양식</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 500px; margin: 0 auto; background-color: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        .result { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
-        .result p { margin: 5px 0; }
-        .highlight { color: #d9534f; font-weight: bold; }
+        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; background-color: #f0f2f5; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { text-align: center; color: #1a1a1a; margin-bottom: 30px; }
+        h3 { border-left: 5px solid #007bff; padding-left: 10px; margin-bottom: 15px; }
+        
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+        
+        .output-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .msg-box { position: relative; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 15px; white-space: pre-wrap; font-size: 13px; color: #333; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .copy-btn:hover { background: #0056b3; }
+        
+        .carrier-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; color: white; }
+        .skt { background: #ee1c25; } .lgu { background: #e6007e; } .kt { background: #000000; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>경이 칼퇴 계산기</h2>
-    
-    <div class="input-group">
-        <label for="price">출고가 (원)</label>
-        <input type="number" id="price" placeholder="예: 1200000" value="1000000">
+    <h1>경이 칼퇴 문자 양식</h1>
+
+    <div class="card">
+        <h3>공통 데이터 입력</h3>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>모델명 (용량/컬러)</label>
+                <input type="text" id="model" placeholder="예: 갤럭시 S26 256GB 네이비" oninput="updateAll()">
+            </div>
+            <div class="input-group">
+                <label>가입유형</label>
+                <select id="type" onchange="updateAll()">
+                    <option value="선택약정">선택약정</option>
+                    <option value="공시지원금">공시지원금</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>할부원금 (숫자만)</label>
+                <input type="text" id="principal" placeholder="예: 590,570" oninput="updateAll()">
+            </div>
+            <div class="input-group">
+                <label>할부/약정 개월</label>
+                <select id="months" onchange="updateAll()">
+                    <option value="24">24개월</option>
+                    <option value="30">30개월</option>
+                    <option value="36">36개월</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>요금제 변경일</label>
+                <input type="text" id="changeDate" placeholder="예: 26년 7월 1일" oninput="updateAll()">
+            </div>
+            <div class="input-group">
+                <label>담당자 번호</label>
+                <input type="text" id="phone" value="010-7654-0047" oninput="updateAll()">
+            </div>
+        </div>
     </div>
 
-    <div class="input-group">
-        <label for="support">공시지원금 (원)</label>
-        <input type="number" id="support" placeholder="예: 300000" value="0">
+    <div class="output-container">
+        <div class="card">
+            <span class="carrier-tag skt">SKT</span>
+            <div class="msg-box" id="sktMsg"></div>
+            <button class="copy-btn" onclick="copyText('sktMsg')">복사하기</button>
+        </div>
+
+        <div class="card">
+            <span class="carrier-tag lgu">LGU+</span>
+            <div class="msg-box" id="lguMsg"></div>
+            <button class="copy-btn" onclick="copyText('lguMsg')">복사하기</button>
+        </div>
+
+        <div class="card">
+            <span class="carrier-tag kt">KT</span>
+            <div class="msg-box" id="ktMsg"></div>
+            <button class="copy-btn" onclick="copyText('ktMsg')">복사하기</button>
+        </div>
     </div>
 
-    <div class="input-group">
-        <label for="months">할부 기간 (개월)</label>
-        <select id="months">
-            <option value="12">12개월 (1.0322)</option>
-            <option value="24" selected>24개월 (1.0631 - 실무 1.066)</option>
-            <option value="30">30개월 (1.0791)</option>
-            <option value="36">36개월 (1.0954)</option>
-            <option value="48">48개월 (1.1287)</option>
-        </select>
-    </div>
+    <script>
+        const links = `***참고내용***
+1. 유심칩 옮기기 (6분부터 재생 하세요!)
+https://youtu.be/I4dshCOcT7U
 
-    <button onclick="calculate()">계산하기</button>
+2.전화번호부/사진 등 옮기기
+https://youtu.be/sIQPK2PpqSw
 
-    <div id="resultArea" class="result">
-        <p>할부원금: <span id="resPrincipal">0</span>원</p>
-        <p>총 할부이자: <span id="resInterest" class="highlight">0</span>원</p>
-        <hr>
-        <p><strong>최종 납부 합계: <span id="resTotal">0</span>원</strong></p>
-        <p><small>(월 납부액: <span id="resMonthly">0</span>원)</small></p>
-    </div>
-</div>
+3.카카오톡 백업하기
+https://youtu.be/YK_fif9YA-o`;
 
-<script>
-    function calculate() {
-        // 1. 값 가져오기
-        const price = parseFloat(document.getElementById('price').value) || 0;
-        const support = parseFloat(document.getElementById('support').value) || 0;
-        const months = parseInt(document.getElementById('months').value);
+        function updateAll() {
+            const model = document.getElementById('model').value || "[모델명]";
+            const type = document.getElementById('type').value;
+            const principal = document.getElementById('principal').value || "0";
+            const months = document.getElementById('months').value;
+            const date = document.getElementById('changeDate').value || "[날짜]";
+            const phone = document.getElementById('phone').value;
 
-        // 2. 할부원금 계산
-        const principal = price - support;
-        if (principal <= 0) {
-            alert("공시지원금이 출고가보다 큽니다.");
-            return;
+            // SKT 양식
+            document.getElementById('sktMsg').innerText = `SKT개통완료 문자 드립니다 
+
+***상세내용***
+ - 신청모델 : ${model}
+ - 가입유형 : ${type} 
+ - 할부개월 : ${months}개월
+ - 할부원금 : ${principal}원 (부가세포함)
+ - 약정기간 : ${months}개월 
+ - 요금제변경일 : ${date} 
+(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)
+ㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다
+
+${links}
+
+상위 링크 클릭시 확인 가능합니다!
+문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)
+
+ - 담당직원 : ${phone} (10시~18시 상담가능)`;
+
+            // LGU+ 양식
+            document.getElementById('lguMsg').innerText = `[LGU+]
+고객님 안녕하세요
+휴대폰 개통이 완료되어 안내 문자 드립니다
+
+1) 개통단말기 : ${model}
+2) 할부원금/개월 : ${principal}원 / ${months}개월
+3) 요금제변경일 : 개통월 제외 6개월 이후 (${date})
+ㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) 
+4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw
+5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U
+6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o
+
+유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다
+
+☎ 직통번호 : ${phone} ☎
+[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
+
+            // KT 양식
+            document.getElementById('ktMsg').innerText = `안녕하세요 고객님 KT모바일담당자입니다
+개통 완료되어 안내 문자 남겨드립니다
+
+업무 외 시간과 점심시간은 통화가 어렵습니다
+다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다
+
+요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다
+
+-----------------------------------------------
+
+[요금제변경일] ${date}
+[개통모델] ${model}
+[할부원금] ${principal}원 (Vat포함)
+[할부기간] ${months}개월
+[약정기간] ${months}개월
+
+[유심&데이터 이동 매뉴얼]
+1. 유심 이동 방법 (6:00~)
+https://youtu.be/I4dshCOcT7U
+
+2. 데이터 이동 방법
+https://youtu.be/sIQPK2PpqSw
+
+3. 카카오톡 백업 방법
+https://youtu.be/YK_fif9YA-o
+
+★문의사항은 저에게 전화 부탁드립니다★
+★${phone}★`;
         }
 
-        // 3. 개월수별 계수 설정 (연 5.9% 원리금균등 기준)
-        // 24개월은 요청하신 대로 1.066에 근접하게 세팅되었습니다.
-        const rates = {
-            12: 1.0322,
-            24: 1.0660, // 실무 기준치 적용
-            30: 1.0791,
-            36: 1.0954,
-            48: 1.1287
-        };
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("문구가 복사되었습니다!");
+            });
+        }
 
-        const factor = rates[months];
-
-        // 4. 이자 및 총액 계산
-        const totalAmount = Math.floor(principal * factor);
-        const totalInterest = totalAmount - principal;
-        const monthlyPayment = Math.floor(totalAmount / months);
-
-        // 5. 결과 출력
-        document.getElementById('resPrincipal').innerText = principal.toLocaleString();
-        document.getElementById('resInterest').innerText = totalInterest.toLocaleString();
-        document.getElementById('resTotal').innerText = totalAmount.toLocaleString();
-        document.getElementById('resMonthly').innerText = monthlyPayment.toLocaleString();
-        
-        document.getElementById('resultArea').style.display = 'block';
-    }
-</script>
-
+        // 초기 실행
+        updateAll();
+    </script>
 </body>
 </html>
