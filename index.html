@@ -62,8 +62,8 @@
                 <input type="text" id="staffName" placeholder="@@@" oninput="updateAll()">
             </div>
             <div class="input-group">
-                <label>담당직원 연락처</label>
-                <input type="text" id="phoneInput" placeholder="010-4266-2389" maxlength="13" oninput="formatPhone(this)">
+                <label>담당직원 연락처 (개통문자용)</label>
+                <input type="text" id="phoneInput" placeholder="010-4266-2389" maxlength="13" oninput="formatPhone(this); updateMsg();">
             </div>
             <div class="input-group">
                 <label>가입 유형</label>
@@ -105,7 +105,7 @@
         <button class="tab-btn" onclick="switchTab('adminTab', event)">📋 관리콜/악세서리</button>
     </div>
 
-    <!-- 1. 개통 문자 (기존 유지) -->
+    <!-- 1. 개통 문자 -->
     <div id="msgTab" class="output-area active card">
         <div id="msgBox" class="msg-content" contenteditable="true"></div>
         <div class="copy-wrapper">
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- 2. 가격표 (기존 유지) -->
+    <!-- 2. 가격표 -->
     <div id="priceTab" class="output-area card">
         <table class="price-table">
             <tr><th>모델명</th><td id="td_name">-</td></tr>
@@ -125,7 +125,7 @@
         </table>
     </div>
 
-    <!-- 3. 관리콜 / 악세서리 (수정된 전용 페이지) -->
+    <!-- 3. 관리콜 / 악세서리 -->
     <div id="adminTab" class="output-area card">
         <div class="admin-box">
             <span class="admin-title">관리콜 상세 설정</span>
@@ -136,6 +136,11 @@
                         <option value="1차">1차 관리콜이력</option>
                         <option value="일반">관리콜이력</option>
                     </select>
+                </div>
+                <!-- 고객 연락처 분리 입력 -->
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>고객 연락처 (관리콜용)</label>
+                    <input type="text" id="custPhoneCall" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); updateAdminMsg();">
                 </div>
                 <div class="input-group">
                     <label>변경 요금제</label>
@@ -159,7 +164,8 @@
                     <label>건식업셀결과</label>
                     <select id="upcellResult" onchange="updateAdminMsg()">
                         <option value="미대상" selected>미대상</option>
-                        <option value="대상">대상</option>
+                        <option value="성공">성공</option>
+                        <option value="대상">실패</option>
                     </select>
                 </div>
                 <div class="input-group" style="grid-column: span 2;">
@@ -176,15 +182,25 @@
 
         <div class="admin-box">
             <span class="admin-title">악세서리 주문 상세 설정</span>
-            <div class="input-group">
-                <label>지점명 선택</label>
-                <select id="branch" onchange="updateAdminMsg()">
-                    <option value="크로바둔산 1지점">크로바둔산 1지점</option>
-                    <option value="크로바둔산 2지점">크로바둔산 2지점</option>
-                </select>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>지점명 선택</label>
+                    <select id="branch" onchange="updateAdminMsg()">
+                        <option value="크로바둔산 1지점">크로바둔산 1지점</option>
+                        <option value="크로바둔산 2지점">크로바둔산 2지점</option>
+                    </select>
+                </div>
+                <!-- 고객 연락처 분리 입력 -->
+                <div class="input-group">
+                    <label>고객 연락처 (악세서리용)</label>
+                    <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); updateAdminMsg();">
+                </div>
             </div>
-            <div class="input-group"><label>배송 주소</label><input type="text" id="address" placeholder="주소를 입력하세요" oninput="updateAdminMsg()"></div>
-            <div class="input-group">
+            <div class="input-group" style="margin-top:10px;">
+                <label>배송 주소</label>
+                <input type="text" id="address" placeholder="주소를 입력하세요" oninput="updateAdminMsg()" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div class="input-group" style="margin-top:10px;">
                 <label>품목 선택 (중복 선택 가능)</label>
                 <div class="chip-container">
                     <div class="chip selected" onclick="toggleAcc(this)">투명케이스</div>
@@ -320,10 +336,10 @@
             let msg = "";
             if (currentCarrier === 'SKT') {
                 const ds = dateInput.getAttribute('data-skt') || "[날짜]";
-                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (부가세포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${ds} \n(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
+                msg = `SKT개통완료 문자 드립니다 \n\n***상세내용***\n - 신청모델 : ${modelData[modelKey].name} / ${color}\n - 가입유형 : ${typeName}\n - 할부개월 : ${month}개월\n - 할부원금 : ${price}원 (부가세포함)\n - 약정기간 : 24개월 \n - 요금제변경일 : ${ds} \n(개통월 제외, 6월 이후 가능/기간내 변경 불가합니다)\nㄴ자동변경 아닌 직접 변경 해주셔야하는점 참고 부탁드립니다\n\n***참고내용***\n1. 유심칩 옮기기 (6분부터 재생 하세요!)\nhttps://youtu.be/I4dshCOcT7U\n\n2.전화번호부/사진 등 옮기기\nhttps://youtu.be/sIQPK2PpqSw\n\n3.카카오톡 백업하기\nhttps://youtu.be/YK_fif9YA-o\n\n상위 링크 클릭시 확인 가능합니다!\n문의사항 있을경우 하단번호로 연락 부탁드리며 부재시 문자 남겨주시면 순차 연락 드리겠습니다 :)\n\n - 담당직원 : ${phone} (10시~18시 상담가능)`;
             } else if (currentCarrier === 'LGU') {
                 const dl = dateInput.getAttribute('data-lgu') || "[날짜]";
-                msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].nameLGU} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 6개월 이후 (${dl})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw\n5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U\n6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o\n\n유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
+                msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].nameLGU} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 6개월 이후 (${dl})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSw\n5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7U\n6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-o\n\n유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
             } else if (currentCarrier === 'KT') {
                 const dk = dateInput.getAttribute('data-kt') || "[날짜]";
                 msg = `안녕하세요 고객님 KT모바일센터입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
@@ -331,36 +347,36 @@
             document.getElementById('msgBox').innerText = msg;
         }
 
-        // 수정된 관리콜/악세서리 생성 로직
         function updateAdminMsg() {
             const user = document.getElementById('userName').value || "[고객명]";
             const staff = document.getElementById('staffName').value || "[담당자]";
-            const phone = document.getElementById('phoneInput').value || "[연락처]";
+            
+            // 전용 고객 연락처 가져오기
+            const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
+            const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
+            
             const plan = document.getElementById('targetPlan').value;
             const ret = document.getElementById('returnYn').value;
             const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
             
-            // 변경일 포맷팅
             const rawDate = document.getElementById('dateInput').value;
             const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
 
-            // 관리콜 추가 항목
             const formType = document.getElementById('callFormType').value;
             const title = formType === '1차' ? '[1차 관리콜이력]' : '[관리콜이력]';
             const guide = document.getElementById('guideYn').value;
             const upcell = document.getElementById('upcellResult').value;
             const usim = document.getElementById('usimYn').value;
 
-            const callMsg = `${title}\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${phone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
+            const callMsg = `${title}\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
             document.getElementById('callResult').innerText = callMsg;
 
-            // 악세서리 
             const br = document.getElementById('branch').value;
             const addr = document.getElementById('address').value || "[주소 입력]";
             const model = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
             const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
 
-            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${user}\n담당자 : ${staff}\n연락처 : ${phone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
+            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${user}\n담당자 : ${staff}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
             document.getElementById('accResult').innerText = accMsg;
         }
 
@@ -369,7 +385,8 @@
             if (v.length <= 3) t.value = v;
             else if (v.length <= 7) t.value = v.substring(0, 3) + "-" + v.substring(3);
             else t.value = v.substring(0, 3) + "-" + v.substring(3, 7) + "-" + v.substring(7, 11);
-            updateAll();
+            // 이 함수는 input 이벤트에서 호출되므로, 
+            // 어떤 input이 변했느냐에 따라 updateMsg 혹은 updateAdminMsg가 개별 호출되도록 HTML에서 설정함.
         }
 
         function formatDate(t) {
