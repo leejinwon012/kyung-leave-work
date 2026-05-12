@@ -58,12 +58,8 @@
                 <input type="text" id="userName" placeholder="@@@" oninput="updateAll()">
             </div>
             <div class="input-group">
-                <label>담당자명</label>
-                <input type="text" id="staffName" placeholder="@@@" oninput="updateAll()">
-            </div>
-            <div class="input-group">
                 <label>담당직원 연락처 (개통문자용)</label>
-                <input type="text" id="phoneInput" placeholder="010-4266-2389" maxlength="13" oninput="formatPhone(this); updateMsg();">
+                <input type="text" id="phoneInput" placeholder="010-1234-5678" maxlength="13" oninput="formatPhone(this); updateMsg();">
             </div>
             <div class="input-group">
                 <label>가입 유형</label>
@@ -130,14 +126,18 @@
         <div class="admin-box">
             <span class="admin-title">관리콜 상세 설정</span>
             <div class="input-grid">
-                <div class="input-group" style="grid-column: span 2;">
+                <div class="input-group">
                     <label>양식 선택</label>
                     <select id="callFormType" onchange="updateAdminMsg()">
                         <option value="1차">1차 관리콜이력</option>
                         <option value="일반">관리콜이력</option>
                     </select>
                 </div>
-                <!-- 고객 연락처 분리 입력 -->
+                <!-- 담당자명 이동 -->
+                <div class="input-group">
+                    <label>담당자명 (관리콜용)</label>
+                    <input type="text" id="staffNameCall" placeholder="@@@" oninput="updateAdminMsg()">
+                </div>
                 <div class="input-group" style="grid-column: span 2;">
                     <label>고객 연락처 (관리콜용)</label>
                     <input type="text" id="custPhoneCall" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); updateAdminMsg();">
@@ -165,7 +165,7 @@
                     <select id="upcellResult" onchange="updateAdminMsg()">
                         <option value="미대상" selected>미대상</option>
                         <option value="성공">성공</option>
-                        <option value="대상">실패</option>
+                        <option value="실패">실패</option>
                     </select>
                 </div>
                 <div class="input-group" style="grid-column: span 2;">
@@ -190,8 +190,12 @@
                         <option value="크로바둔산 2지점">크로바둔산 2지점</option>
                     </select>
                 </div>
-                <!-- 고객 연락처 분리 입력 -->
+                <!-- 담당자명 이동 -->
                 <div class="input-group">
+                    <label>담당자명 (악세서리용)</label>
+                    <input type="text" id="staffNameAcc" placeholder="@@@" oninput="updateAdminMsg()">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
                     <label>고객 연락처 (악세서리용)</label>
                     <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); updateAdminMsg();">
                 </div>
@@ -349,9 +353,11 @@
 
         function updateAdminMsg() {
             const user = document.getElementById('userName').value || "[고객명]";
-            const staff = document.getElementById('staffName').value || "[담당자]";
             
-            // 전용 고객 연락처 가져오기
+            // 담당자명 각각 가져오기
+            const staffCall = document.getElementById('staffNameCall').value || "[담당자]";
+            const staffAcc = document.getElementById('staffNameAcc').value || "[담당자]";
+            
             const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
             const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
             
@@ -368,7 +374,7 @@
             const upcell = document.getElementById('upcellResult').value;
             const usim = document.getElementById('usimYn').value;
 
-            const callMsg = `${title}\n- 고객명/담당자 : ${user} / ${staff}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
+            const callMsg = `${title}\n- 고객명/담당자 : ${user} / ${staffCall}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
             document.getElementById('callResult').innerText = callMsg;
 
             const br = document.getElementById('branch').value;
@@ -376,7 +382,7 @@
             const model = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
             const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
 
-            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${user}\n담당자 : ${staff}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
+            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${user}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
             document.getElementById('accResult').innerText = accMsg;
         }
 
@@ -385,8 +391,6 @@
             if (v.length <= 3) t.value = v;
             else if (v.length <= 7) t.value = v.substring(0, 3) + "-" + v.substring(3);
             else t.value = v.substring(0, 3) + "-" + v.substring(3, 7) + "-" + v.substring(7, 11);
-            // 이 함수는 input 이벤트에서 호출되므로, 
-            // 어떤 input이 변했느냐에 따라 updateMsg 혹은 updateAdminMsg가 개별 호출되도록 HTML에서 설정함.
         }
 
         function formatDate(t) {
