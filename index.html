@@ -475,11 +475,11 @@
 
             const br = document.getElementById('branch').value;
             const addr = document.getElementById('address').value || "[주소 입력]";
-            const model = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
+            const fullModelName = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
+            const model = fullModelName.replace(/\s\d+GB/g, '');
             const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
 
             const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${userAcc}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
-            document.getElementById('accResult').innerText = accMsg;
         }
 
         function formatPhone(t) {
