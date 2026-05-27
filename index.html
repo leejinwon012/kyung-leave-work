@@ -23,6 +23,13 @@
         .output-area { display: none; border-top: 1px solid #ddd; border-radius: 0 0 12px 12px; }
         .output-area.active { display: block; }
 
+        /* 문자/유심관리콜 내부 서브 탭 스타일 */
+        .sub-tab-container { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .sub-tab-btn { padding: 6px 14px; border: 1px solid #ddd; background: #f1f3f5; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; }
+        .sub-tab-btn.active { background: #007bff; color: white; border-color: #007bff; }
+        .sub-output-area { display: none; }
+        .sub-output-area.active { display: block; }
+
         .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 250px; outline: none; line-height: 1.5; margin-bottom: 10px; }
         .copy-wrapper { display: flex; justify-content: flex-end; margin-bottom: 10px; }
         .copy-btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
@@ -92,15 +99,62 @@
     </div>
 
     <div class="tab-container" id="tabContainer" style="display: none;">
-        <button class="tab-btn active" onclick="switchTab('msgTab', event)">💬 개통문자 양식</button>
+        <button class="tab-btn active" onclick="switchTab('msgTab', event)">💬 개통문자 / 유심 양식</button>
         <button class="tab-btn" onclick="switchTab('priceTab', event)">💰 상세 가격표</button>
         <button class="tab-btn" onclick="switchTab('adminTab', event)">📋 관리콜/악세서리</button>
     </div>
 
     <div id="msgTab" class="output-area active card">
-        <div id="msgBox" class="msg-content" contenteditable="true"></div>
-        <div class="copy-wrapper">
-            <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
+        <div class="sub-tab-container">
+            <button class="sub-tab-btn active" onclick="switchSubTab('subMsgArea', event)">💬 개통문자 양식</button>
+            <button class="sub-tab-btn" onclick="switchSubTab('subUsimArea', event)">🆔 유심 관리콜이력</button>
+        </div>
+
+        <div id="subMsgArea" class="sub-output-area active">
+            <div id="msgBox" class="msg-content" contenteditable="true"></div>
+            <div class="copy-wrapper">
+                <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
+            </div>
+        </div>
+
+        <div id="subUsimArea" class="sub-output-area">
+            <div id="usimCallResult" class="msg-content" contenteditable="true"></div>
+            <div class="copy-wrapper">
+                <button class="copy-btn" onclick="copyText('usimCallResult')">유심 관리콜 복사</button>
+            </div>
+
+            <div class="admin-box" style="margin-top: 20px;">
+                <span class="admin-title">유심 관리콜 상세 설정</span>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>고객명</label>
+                        <input type="text" id="usimUserName" placeholder="고객명 입력" oninput="syncFields('name', this.value); updateUsimMsg();">
+                    </div>
+                    <div class="input-group">
+                        <label>담당자명</label>
+                        <input type="text" id="usimStaffName" placeholder="담당자명 입력" oninput="syncFields('staff', this.value); updateUsimMsg();">
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>고객 연락처</label>
+                        <input type="text" id="usimCustPhone" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateUsimMsg();">
+                    </div>
+                    <div class="input-group">
+                        <label>유심인식여부</label>
+                        <select id="usimRecognizeYn" onchange="updateUsimMsg()">
+                            <option value="Y" selected>Y</option>
+                            <option value="N">N</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>건식업셀결과</label>
+                        <select id="usimUpcellResult" onchange="updateUsimMsg()">
+                            <option value="미대상" selected>미대상</option>
+                            <option value="성공">성공</option>
+                            <option value="실패">실패</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -194,9 +248,11 @@
                     <label>담당자명 (악세서리용)</label>
                     <input type="text" id="staffNameAcc" placeholder="@@@" oninput="syncFields('staff', this.value); updateAdminMsg()">
                 </div>
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>고객 연락처 (악세서리용)</label>
-                    <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAdminMsg();">
+                <div class="input-grid" style="grid-column: span 2; display: contents;">
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>고객 연락처 (악세서리용)</label>
+                        <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAdminMsg();">
+                    </div>
                 </div>
             </div>
             <div class="input-group" style="margin-top:10px;">
@@ -359,6 +415,14 @@
             event.currentTarget.classList.add('active');
         }
 
+        // 서브 탭 전환용 함수
+        function switchSubTab(subTabId, event) {
+            document.querySelectorAll('.sub-output-area').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(subTabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
         function setCarrier(carrier, btn) {
             currentCarrier = carrier;
             document.querySelectorAll('.carrier-btn').forEach(b => b.classList.remove('active'));
@@ -403,19 +467,23 @@
             updateAll();
         }
 
+        // 통합 동기화 처리 로직 (상세 설정 필드 간 상호 연동)
         function syncFields(type, val) {
-        if (type === 'name') {
-            // 관리콜이 수정되면 악세서리용을 바꾸고, 반대도 마찬가지
-            document.getElementById('userNameCall').value = val;
-            document.getElementById('userNameAcc').value = val;
-        } else if (type === 'staff') {
-            document.getElementById('staffNameCall').value = val;
-            document.getElementById('staffNameAcc').value = val;
-        } else if (type === 'phone') {
-            document.getElementById('custPhoneCall').value = val;
-            document.getElementById('custPhoneAcc').value = val;
+            if (type === 'name') {
+                document.getElementById('usimUserName').value = val;
+                document.getElementById('userNameCall').value = val;
+                document.getElementById('userNameAcc').value = val;
+            } else if (type === 'staff') {
+                document.getElementById('usimStaffName').value = val;
+                document.getElementById('staffNameCall').value = val;
+                document.getElementById('staffNameAcc').value = val;
+            } else if (type === 'phone') {
+                document.getElementById('usimCustPhone').value = val;
+                document.getElementById('custPhoneCall').value = val;
+                document.getElementById('custPhoneAcc').value = val;
+            }
+            updateAll();
         }
-    }
 
         function updateColors() {
             const modelKey = document.getElementById('modelSelect').value;
@@ -434,7 +502,7 @@
             updateAdminMsg();
         }
 
-        function updateAll() { updateMsg(); updateAdminMsg(); }
+        function updateAll() { updateMsg(); updateAdminMsg(); updateUsimMsg(); }
 
         function updateMsg() {
             if (!currentCarrier) return;
@@ -459,6 +527,20 @@
                 msg = `안녕하세요 고객님 KT모바일센터입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
             }
             document.getElementById('msgBox').innerText = msg;
+        }
+
+        // 유심 관리콜이력 양식 자동 완성 함수 (상세 설정 필드값 반영)
+        function updateUsimMsg() {
+            const userCall = document.getElementById('usimUserName').value || " ";
+            const staffCall = document.getElementById('usimStaffName').value || " ";
+            const callPhone = document.getElementById('usimCustPhone').value || " ";
+            const rawDate = document.getElementById('dateInput').value;
+            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : " ";
+            const usim = document.getElementById('usimRecognizeYn').value;
+            const upcell = document.getElementById('usimUpcellResult').value;
+
+            const usimMsg = `[유심 관리콜이력]\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사 : 유심번호이동\n- 유치경로 : 인터넷가입자업셀\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 유심인식여부 : ${usim}\n- 건식업셀결과 : ${upcell}`;
+            document.getElementById('usimCallResult').innerText = usimMsg;
         }
 
         function updateAdminMsg() {
