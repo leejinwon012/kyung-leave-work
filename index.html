@@ -5,14 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경이 칼퇴 문자 양식</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #f8f9fa; color: #333; }
+        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; max-width: 1100px; margin: 0 auto; background-color: #f8f9fa; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h2 { font-size: 20px; margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .full-width { grid-column: span 2; }
+        
+        @media (max-width: 768px) {
+            .full-width { grid-column: auto; }
+        }
+
         .input-group { display: flex; flex-direction: column; margin-bottom: 10px; }
-        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #666; }
-        input, select, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background-color: #fff; }
+        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #666; width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+        input, select, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background-color: #fff; width: 100%; box-sizing: border-box; }
         input:focus, textarea:focus { border-color: #007bff; }
+        
         .carrier-selector { display: flex; gap: 10px; margin-bottom: 20px; }
         .carrier-btn { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-weight: bold; transition: all 0.2s; }
         .carrier-btn.active { border-color: #007bff; background: #e7f1ff; color: #007bff; }
@@ -23,14 +34,7 @@
         .output-area { display: none; border-top: 1px solid #ddd; border-radius: 0 0 12px 12px; }
         .output-area.active { display: block; }
 
-        /* 문자/유심관리콜 내부 서브 탭 스타일 */
-        .sub-tab-container { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .sub-tab-btn { padding: 6px 14px; border: 1px solid #ddd; background: #f1f3f5; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; }
-        .sub-tab-btn.active { background: #007bff; color: white; border-color: #007bff; }
-        .sub-output-area { display: none; }
-        .sub-output-area.active { display: block; }
-
-        .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 250px; outline: none; line-height: 1.5; margin-bottom: 10px; }
+        .msg-content { background: #ffffff; padding: 20px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; border: 2px solid #e9ecef; min-height: 250px; outline: none; line-height: 1.5; margin-bottom: 10px; box-sizing: border-box; }
         .copy-wrapper { display: flex; justify-content: flex-end; margin-bottom: 10px; }
         .copy-btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
         
@@ -40,16 +44,26 @@
         .price-table td { font-weight: bold; color: #333; }
         .highlight-price { color: #d63384; font-size: 18px; }
 
-        .admin-box { background: #f1f3f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+
+        .admin-flex-container { display: flex; gap: 20px; margin-bottom: 15px; align-items: flex-start; }
+        .admin-flex-child { flex: 1; min-width: 0; }
+
+        .admin-box { background: #f1f3f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
         .admin-title { font-weight: bold; color: #495057; margin-bottom: 10px; display: block; border-left: 4px solid #007bff; padding-left: 10px; }
         .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .chip { padding: 6px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; }
         .chip.selected { background: #007bff; color: white; border-color: #007bff; }
+
+
+        @media (max-width: 850px) {
+            .admin-flex-container { flex-direction: column; gap: 0; }
+            .admin-flex-child { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
+    <div class="card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
         <h2>📋 정보 통합 입력</h2>
         <div class="input-grid">
             <div class="input-group" style="grid-column: span 2;">
@@ -92,73 +106,26 @@
                 <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateAll()">
             </div>
             <div class="input-group" style="grid-column: span 2;">
-                <label>요금제 변경일 (예: 261201)</label>
+                <label>요금제 변경일 (예: 961002)</label>
                 <input type="text" id="dateInput" placeholder="261201" maxlength="6" oninput="formatDate(this)">
             </div>
         </div>
     </div>
 
-    <div class="tab-container" id="tabContainer" style="display: none;">
-        <button class="tab-btn active" onclick="switchTab('msgTab', event)">💬 개통문자 / 유심 양식</button>
+    <div class="tab-container" id="tabContainer" style="display: none; max-width: 700px; margin-left: auto; margin-right: auto;">
+        <button class="tab-btn active" onclick="switchTab('msgTab', event)">💬 개통문자 양식</button>
         <button class="tab-btn" onclick="switchTab('priceTab', event)">💰 상세 가격표</button>
         <button class="tab-btn" onclick="switchTab('adminTab', event)">📋 관리콜/악세서리</button>
     </div>
 
-    <div id="msgTab" class="output-area active card">
-        <div class="sub-tab-container">
-            <button class="sub-tab-btn active" onclick="switchSubTab('subMsgArea', event)">💬 개통문자 양식</button>
-            <button class="sub-tab-btn" onclick="switchSubTab('subUsimArea', event)">🆔 유심 관리콜이력</button>
-        </div>
-
-        <div id="subMsgArea" class="sub-output-area active">
-            <div id="msgBox" class="msg-content" contenteditable="true"></div>
-            <div class="copy-wrapper">
-                <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
-            </div>
-        </div>
-
-        <div id="subUsimArea" class="sub-output-area">
-            <div class="admin-box" style="margin-bottom: 15px;">
-                <span class="admin-title">유심 관리콜 상세 설정</span>
-                <div class="input-grid">
-                    <div class="input-group">
-                        <label>고객명</label>
-                        <input type="text" id="usimUserName" placeholder="고객명 입력" oninput="syncFields('name', this.value); updateUsimMsg();">
-                    </div>
-                    <div class="input-group">
-                        <label>담당자명</label>
-                        <input type="text" id="usimStaffName" placeholder="담당자명 입력" oninput="syncFields('staff', this.value); updateUsimMsg();">
-                    </div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label>고객 연락처</label>
-                        <input type="text" id="usimCustPhone" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateUsimMsg();">
-                    </div>
-                    <div class="input-group">
-                        <label>유심인식여부</label>
-                        <select id="usimRecognizeYn" onchange="updateUsimMsg()">
-                            <option value="Y" selected>Y</option>
-                            <option value="N">N</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>건식업셀결과</label>
-                        <select id="usimUpcellResult" onchange="updateUsimMsg()">
-                            <option value="미대상" selected>미대상</option>
-                            <option value="성공">성공</option>
-                            <option value="실패">실패</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div id="usimCallResult" class="msg-content" contenteditable="true"></div>
-            <div class="copy-wrapper">
-                <button class="copy-btn" onclick="copyText('usimCallResult')">유심 관리콜 복사</button>
-            </div>
+    <div id="msgTab" class="output-area active card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+        <div id="msgBox" class="msg-content" contenteditable="true"></div>
+        <div class="copy-wrapper">
+            <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
         </div>
     </div>
 
-    <div id="priceTab" class="output-area card">
+    <div id="priceTab" class="output-area card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
         <table class="price-table">
             <tr><th>모델명</th><td id="td_name">-</td></tr>
             <tr><th>출고가</th><td id="td_factory">-</td></tr>
@@ -170,64 +137,107 @@
     </div>
 
     <div id="adminTab" class="output-area card">
-        <div class="admin-box">
-            <span class="admin-title">관리콜 상세 설정</span>
-            <div class="input-grid">
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>양식 선택</label>
-                    <select id="callFormType" onchange="updateAdminMsg()">
-                        <option value="1차">1차 관리콜이력</option>
-                        <option value="일반">관리콜이력</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>고객명 (관리콜용)</label>
-                    <input type="text" id="userNameCall" placeholder="@@@" oninput="syncFields('name', this.value); updateAdminMsg()">
-                </div>
-                <div class="input-group">
-                    <label>담당자명 (관리콜용)</label>
-                    <input type="text" id="staffNameCall" placeholder="@@@" oninput="syncFields('staff', this.value); updateAdminMsg()">
-                </div>
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>고객 연락처 (관리콜용)</label>
-                    <input type="text" id="custPhoneCall" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAdminMsg();">
-                </div>
-                <div class="input-group">
-                    <label>변경 요금제</label>
-                    <input type="text" id="targetPlan" value="5G 미니" oninput="updateAdminMsg()">
-                </div>
-                <div class="input-group">
-                    <label>중고폰 반납</label>
-                    <select id="returnYn" onchange="updateAdminMsg()">
-                        <option value="Y (방문수거 접수건)" selected >Y (방문수거 접수건)</option>
-                        <option value="N">N</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>반납안내여부</label>
-                    <select id="guideYn" onchange="updateAdminMsg()">
-                        <option value="Y" selected>Y</option>
-                        <option value="N">N</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>건식업셀결과</label>
-                    <select id="upcellResult" onchange="updateAdminMsg()">
-                        <option value="미대상" selected>미대상</option>
-                        <option value="성공">성공</option>
-                        <option value="실패">실패</option>
-                    </select>
-                </div>
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>유심인식여부</label>
-                    <select id="usimYn" onchange="updateAdminMsg()">
-                        <option value="Y">Y</option>
-                        <option value="N" selected>N</option>
-                    </select>
+        <div class="admin-flex-container">
+            
+            <div class="admin-flex-child">
+                <div class="admin-box">
+                    <span class="admin-title">관리콜 상세 설정</span>
+                    <div class="admin-grid">
+                        <div class="input-group full-width">
+                            <label>양식 선택</label>
+                            <select id="callFormType" onchange="updateAdminMsg()">
+                                <option value="1차">1차 관리콜이력</option>
+                                <option value="일반">관리콜이력</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>고객명 (관리콜용)</label>
+                            <input type="text" id="userNameCall" placeholder="@@@" oninput="syncFields('name', this.value); updateAll()">
+                        </div>
+                        <div class="input-group">
+                            <label>담당자명 (관리콜용)</label>
+                            <input type="text" id="staffNameCall" placeholder="@@@" oninput="syncFields('staff', this.value); updateAll()">
+                        </div>
+                        <div class="input-group full-width">
+                            <label>고객 연락처 (관리콜용)</label>
+                            <input type="text" id="custPhoneCall" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAll();">
+                        </div>
+                        <div class="input-group">
+                            <label>변경 요금제</label>
+                            <input type="text" id="targetPlan" value="5G 미니" oninput="updateAdminMsg()">
+                        </div>
+                        <div class="input-group">
+                            <label>중고폰 반납</label>
+                            <select id="returnYn" onchange="updateAdminMsg()">
+                                <option value="Y (방문수거 접수건)" selected >Y (방문수거 접수건)</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>반납안내여부</label>
+                            <select id="guideYn" onchange="updateAdminMsg()">
+                                <option value="Y" selected>Y</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>건식업셀결과</label>
+                            <select id="upcellResult" onchange="updateAdminMsg()">
+                                <option value="미대상" selected>미대상</option>
+                                <option value="성공">성공</option>
+                                <option value="실패">실패</option>
+                            </select>
+                        </div>
+                        <div class="input-group full-width">
+                            <label>유심인식여부</label>
+                            <select id="usimYn" onchange="updateAdminMsg()">
+                                <option value="Y">Y</option>
+                                <option value="N" selected>N</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="callResult" class="msg-content" contenteditable="true" style="min-height: 250px; background:#fff; margin-top:15px;"></div>
+                    <div class="copy-wrapper"><button class="copy-btn" onclick="copyText('callResult')">관리콜 양식 복사</button></div>
                 </div>
             </div>
-            <div id="callResult" class="msg-content" contenteditable="true" style="min-height: 250px; background:#fff; margin-top:10px;"></div>
-            <div class="copy-wrapper"><button class="copy-btn" onclick="copyText('callResult')">관리콜 양식 복사</button></div>
+
+            <div class="admin-flex-child">
+                <div class="admin-box">
+                    <span class="admin-title">유심 관리콜 상세 설정</span>
+                    <div class="admin-grid">
+                        <div class="input-group">
+                            <label>고객명 (유심용)</label>
+                            <input type="text" id="usimUserName" placeholder="@@@" oninput="syncFields('name', this.value); updateAll();">
+                        </div>
+                        <div class="input-group">
+                            <label>담당자명 (유심용)</label>
+                            <input type="text" id="usimStaffName" placeholder="@@@" oninput="syncFields('staff', this.value); updateAll();">
+                        </div>
+                        <div class="input-group full-width">
+                            <label>고객 연락처 (유심용)</label>
+                            <input type="text" id="usimCustPhone" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAll();">
+                        </div>
+                        <div class="input-group">
+                            <label>유심인식여부</label>
+                            <select id="usimRecognizeYn" onchange="updateUsimMsg()">
+                                <option value="Y" selected>Y</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>건식업셀결과</label>
+                            <select id="usimUpcellResult" onchange="updateUsimMsg()">
+                                <option value="미대상" selected>미대상</option>
+                                <option value="성공">성공</option>
+                                <option value="실패">실패</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="usimCallResult" class="msg-content" contenteditable="true" style="min-height: 382px; background:#fff; margin-top:15px;"></div>
+                    <div class="copy-wrapper"><button class="copy-btn" onclick="copyText('usimCallResult')">유심 관리콜 복사</button></div>
+                </div>
+            </div>
+
         </div>
 
         <div class="admin-box">
@@ -242,17 +252,15 @@
                 </div>
                 <div class="input-group">
                     <label>고객명 (악세서리용)</label>
-                    <input type="text" id="userNameAcc" placeholder="@@@" oninput="syncFields('name', this.value); updateAdminMsg()">
+                    <input type="text" id="userNameAcc" placeholder="@@@" oninput="syncFields('name', this.value); updateAll()">
                 </div>
                 <div class="input-group">
                     <label>담당자명 (악세서리용)</label>
-                    <input type="text" id="staffNameAcc" placeholder="@@@" oninput="syncFields('staff', this.value); updateAdminMsg()">
+                    <input type="text" id="staffNameAcc" placeholder="@@@" oninput="syncFields('staff', this.value); updateAll()">
                 </div>
-                <div class="input-grid" style="grid-column: span 2; display: contents;">
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label>고객 연락처 (악세서리용)</label>
-                        <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAdminMsg();">
-                    </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>고객 연락처 (악세서리용)</label>
+                    <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAll();">
                 </div>
             </div>
             <div class="input-group" style="margin-top:10px;">
@@ -415,14 +423,6 @@
             event.currentTarget.classList.add('active');
         }
 
-        // 서브 탭 전환용 함수
-        function switchSubTab(subTabId, event) {
-            document.querySelectorAll('.sub-output-area').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(subTabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
         function setCarrier(carrier, btn) {
             currentCarrier = carrier;
             document.querySelectorAll('.carrier-btn').forEach(b => b.classList.remove('active'));
@@ -456,7 +456,6 @@
                 document.getElementById('th_monthPay').innerText = `월 기기값 (${month}개월)`;
                 document.getElementById('td_monthPay').innerText = data.month.toLocaleString() + "원";
                 
-                // 공시지원금 처리
                 if (data.hasOwnProperty('gongsi')) {
                     document.getElementById('row_gongsi').style.display = 'table-row';
                     document.getElementById('td_gongsi').innerText = "-" + data.gongsi.toLocaleString() + "원";
@@ -467,22 +466,20 @@
             updateAll();
         }
 
-        // 통합 동기화 처리 로직 (상세 설정 필드 간 상호 연동)
         function syncFields(type, val) {
             if (type === 'name') {
-                document.getElementById('usimUserName').value = val;
                 document.getElementById('userNameCall').value = val;
+                document.getElementById('usimUserName').value = val;
                 document.getElementById('userNameAcc').value = val;
             } else if (type === 'staff') {
-                document.getElementById('usimStaffName').value = val;
                 document.getElementById('staffNameCall').value = val;
+                document.getElementById('usimStaffName').value = val;
                 document.getElementById('staffNameAcc').value = val;
             } else if (type === 'phone') {
-                document.getElementById('usimCustPhone').value = val;
                 document.getElementById('custPhoneCall').value = val;
+                document.getElementById('usimCustPhone').value = val;
                 document.getElementById('custPhoneAcc').value = val;
             }
-            updateAll();
         }
 
         function updateColors() {
@@ -529,17 +526,21 @@
             document.getElementById('msgBox').innerText = msg;
         }
 
-        // 유심 관리콜이력 양식 자동 완성 함수 (상세 설정 필드값 반영)
         function updateUsimMsg() {
-            const userCall = document.getElementById('usimUserName').value || " ";
-            const staffCall = document.getElementById('usimStaffName').value || " ";
-            const callPhone = document.getElementById('usimCustPhone').value || " ";
+            const userCall = document.getElementById('usimUserName').value || "[고객명]";
+            const staffCall = document.getElementById('usimStaffName').value || "[담당자]";
+            const callPhone = document.getElementById('usimCustPhone').value || "[고객 연락처]";
             const rawDate = document.getElementById('dateInput').value;
-            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : " ";
+            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
             const usim = document.getElementById('usimRecognizeYn').value;
             const upcell = document.getElementById('usimUpcellResult').value;
 
-            const usimMsg = `[유심 관리콜이력]\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사 : 유심번호이동\n- 유치경로 : 인터넷가입자업셀\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 유심인식여부 : ${usim}\n- 건식업셀결과 : ${upcell}`;
+            let carrierText = "유심번호이동";
+            if (currentCarrier === "SKT") carrierText = "SK유심번호이동";
+            else if (currentCarrier === "KT") carrierText = "KT유심번호이동";
+            else if (currentCarrier === "LGU") carrierText = "LG유심번호이동";
+
+            const usimMsg = `[유심 관리콜이력]\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사 : ${carrierText}\n- 유치경로 : 인터넷가입자업셀\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 유심인식여부 : ${usim}\n- 건식업셀결과 : ${upcell}`;
             document.getElementById('usimCallResult').innerText = usimMsg;
         }
 
