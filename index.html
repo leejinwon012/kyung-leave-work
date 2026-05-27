@@ -9,6 +9,7 @@
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h2 { font-size: 20px; margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
         
+
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
 
@@ -45,8 +46,8 @@
         .highlight-price { color: #d63384; font-size: 18px; }
 
 
-        .admin-flex-container { display: flex; gap: 20px; margin-bottom: 15px; align-items: flex-start; }
-        .admin-flex-child { flex: 1; min-width: 0; }
+        .flex-container { display: flex; gap: 20px; margin-bottom: 15px; align-items: flex-start; }
+        .flex-child { flex: 1; min-width: 0; }
 
         .admin-box { background: #f1f3f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
         .admin-title { font-weight: bold; color: #495057; margin-bottom: 10px; display: block; border-left: 4px solid #007bff; padding-left: 10px; }
@@ -54,10 +55,9 @@
         .chip { padding: 6px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; }
         .chip.selected { background: #007bff; color: white; border-color: #007bff; }
 
-
         @media (max-width: 850px) {
-            .admin-flex-container { flex-direction: column; gap: 0; }
-            .admin-flex-child { width: 100%; }
+            .flex-container { flex-direction: column; gap: 0; }
+            .flex-child { width: 100%; }
         }
     </style>
 </head>
@@ -75,8 +75,8 @@
                 </div>
             </div>
             <div class="input-group">
-                <label>담당직원 연락처 (개통문자용)</label>
-                <input type="text" id="phoneInput" placeholder="010-1234-5678" maxlength="13" oninput="formatPhone(this); updateMsg();">
+                <label>담당직원 연락처 (문자 연동)</label>
+                <input type="text" id="phoneInput" placeholder="010-1234-5678" maxlength="13" oninput="formatPhone(this); updateAll();">
             </div>
             <div class="input-group">
                 <label>가입 유형</label>
@@ -112,16 +112,29 @@
         </div>
     </div>
 
-    <div class="tab-container" id="tabContainer" style="display: none; max-width: 700px; margin-left: auto; margin-right: auto;">
+    <div class="tab-container" id="tabContainer" style="display: none; max-width: 1100px; margin-left: auto; margin-right: auto;">
         <button class="tab-btn active" onclick="switchTab('msgTab', event)">💬 개통문자 양식</button>
         <button class="tab-btn" onclick="switchTab('priceTab', event)">💰 상세 가격표</button>
         <button class="tab-btn" onclick="switchTab('adminTab', event)">📋 관리콜/악세서리</button>
     </div>
 
-    <div id="msgTab" class="output-area active card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
-        <div id="msgBox" class="msg-content" contenteditable="true"></div>
-        <div class="copy-wrapper">
-            <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
+    <div id="msgTab" class="output-area active card">
+        <div class="flex-container">
+            <div class="flex-child">
+                <span style="font-weight: bold; color: #495057; margin-bottom: 8px; display: block;">기본 개통문자 양식</span>
+                <div id="msgBox" class="msg-content" contenteditable="true"></div>
+                <div class="copy-wrapper">
+                    <button class="copy-btn" onclick="copyText('msgBox')">문자 복사</button>
+                </div>
+            </div>
+            
+            <div class="flex-child">
+                <span style="font-weight: bold; color: #495057; margin-bottom: 8px; display: block;">유심단독 개통문자 양식</span>
+                <div id="usimOnlyMsgBox" class="msg-content" contenteditable="true"></div>
+                <div class="copy-wrapper">
+                    <button class="copy-btn" onclick="copyText('usimOnlyMsgBox')">유심 개통문자 복사</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -137,9 +150,9 @@
     </div>
 
     <div id="adminTab" class="output-area card">
-        <div class="admin-flex-container">
+        <div class="flex-container">
             
-            <div class="admin-flex-child">
+            <div class="flex-child">
                 <div class="admin-box">
                     <span class="admin-title">관리콜 상세 설정</span>
                     <div class="admin-grid">
@@ -201,7 +214,7 @@
                 </div>
             </div>
 
-            <div class="admin-flex-child">
+            <div class="flex-child">
                 <div class="admin-box">
                     <span class="admin-title">유심 관리콜 상세 설정</span>
                     <div class="admin-grid">
@@ -299,122 +312,122 @@
         };
 
         const priceDB = {
-                    "SKT": {
-                        "SELECT": {
-                            "24": {
-                                "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
-                                "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
-                                "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
-                                "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
-                                "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
-                                "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
-                                "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
-                                "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
-                                "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
-                                "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
-                                "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
-                                "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
-                                "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
-                            }
-                        },
-                        "GONGSI": {
-                            "24": {
-                                "S26_256": { factory: 1254000, gongsi: 580000, interest: 44490, total: 718490, month: 29940 },
-                                "S26_512": { factory: 1507000, gongsi: 580000, interest: 61190, total: 988190, month: 41180 },
-                                "S26P_256": { factory: 1452000, gongsi: 580000, interest: 57550, total: 929550, month: 38730 },
-                                "S26P_512": { factory: 1705000, gongsi: 580000, interest: 74250, total: 1199250, month: 49970 },
-                                "S26U_256": { factory: 1797400, gongsi: 580000, interest: 80350, total: 1297750, month: 54080 },
-                                "S26U_512": { factory: 2050400, gongsi: 580000, interest: 97050, total: 1567450, month: 65310 }
-                            }
-                        }
-                    },
-                    "KT": {
-                        "SELECT": {
-                            "24": {
-                                "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
-                                "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
-                                "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
-                                "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
-                                "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
-                                "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
-                                "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
-                                "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
-                                "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
-                                "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
-                                "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
-                                "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
-                                "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
-                            }
-                        }
-                    },
-                    "LGU": {
-                        "SELECT": {
-                            "24": {
-                                "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
-                                "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
-                                "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
-                                "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
-                                "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
-                                "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
-                                "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
-                                "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
-                                "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
-                                "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
-                                "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
-                                "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
-                                "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
-                            },
-                            "30": {
-                                "S26_256": { factory: 1254000, interest: 97830, total: 1351830, month: 45060 },
-                                "S26_512": { factory: 1507000, interest: 117560, total: 1624560, month: 54150 },
-                                "S26P_256": { factory: 1452000, interest: 113270, total: 1565670, month: 52180 },
-                                "S26P_512": { factory: 1705000, interest: 133010, total: 1838010, month: 61260 },
-                                "S26U_256": { factory: 1797400, interest: 140220, total: 1937620, month: 64580 },
-                                "S26U_512": { factory: 2050400, interest: 159960, total: 2210360, month: 73670 },
-                                "S25E_256": { factory: 1496000, interest: 116710, total: 1612710, month: 53760 },
-                                "S25E_512": { factory: 1639000, interest: 127850, total: 1766850, month: 58900 },
-                                "ZFLIP7FE": { factory: 1199000, interest: 93550, total: 1292550, month: 43090 },
-                                "ZFLIP7_256": { factory: 1485000, interest: 115460, total: 1600460, month: 53360 },
-                                "ZFLIP7_512": { factory: 1643400, interest: 128220, total: 1771620, month: 59050 },
-                                "ZFOLD7_256": { factory: 2379300, interest: 185610, total: 2564110, month: 85500 },
-                                "ZFOLD7_512": { factory: 2537700, interest: 198120, total: 2735820, month: 91200 }
-                            },
-                            "36": {
-                                "S26_256": { factory: 1254000, interest: 117320, total: 1371320, month: 38090 },
-                                "S26_512": { factory: 1507000, interest: 140990, total: 1647990, month: 45770 },
-                                "S26P_256": { factory: 1452000, interest: 135840, total: 1587840, month: 44100 },
-                                "S26P_512": { factory: 1705000, interest: 159510, total: 1864510, month: 51790 },
-                                "S26U_256": { factory: 1797400, interest: 168160, total: 1965560, month: 54590 },
-                                "S26U_512": { factory: 2050400, interest: 191830, total: 2242230, month: 62284 },
-                                "S25E_256": { factory: 1496000, interest: 139940, total: 1635940, month: 45440 },
-                                "S25E_512": { factory: 1639000, interest: 153330, total: 1792330, month: 49790 },
-                                "ZFLIP7FE": { factory: 1199000, interest: 112190, total: 1311190, month: 36420 },
-                                "ZFLIP7_256": { factory: 1485000, interest: 134920, total: 1623920, month: 45110 },
-                                "ZFLIP7_512": { factory: 1643400, interest: 153750, total: 1797150, month: 49920 },
-                                "ZFOLD7_256": { factory: 2379300, interest: 222600, total: 2601900, month: 72260 },
-                                "ZFOLD7_512": { factory: 2537700, interest: 237600, total: 2775300, month: 77100 }
-                            }
-                        },
-                        "GONGSI": {
-                            "24": {
-                                "S26_256": { factory: 1254000, gongsi: 700000, interest: 36570, total: 590570, month: 24610 },
-                                "S26_512": { factory: 1507000, gongsi: 700000, interest: 53260, total: 860260, month: 35850 },
-                                "S26P_256": { factory: 1452000, gongsi: 700000, interest: 49630, total: 801630, month: 33400 },
-                                "S26P_512": { factory: 1705000, gongsi: 700000, interest: 66330, total: 1071330, month: 44640 },
-                                "S26U_256": { factory: 1797400, gongsi: 700000, interest: 72430, total: 1169830, month: 48740 },
-                                "S26U_512": { factory: 2050400, gongsi: 700000, interest: 89130, total: 1439530, month: 59980 }
-                            },
-                            "30": {
-                                "S26_256": { factory: 1254000, gongsi: 700000, interest: 45700, total: 599700, month: 19990 },
-                                "S26_512": { factory: 1507000, gongsi: 700000, interest: 66580, total: 873580, month: 29120 },
-                                "S26P_256": { factory: 1452000, gongsi: 700000, interest: 62040, total: 814040, month: 27130 },
-                                "S26P_512": { factory: 1705000, gongsi: 700000, interest: 82920, total: 1087920, month: 36270 },
-                                "S26U_256": { factory: 1797400, gongsi: 700000, interest: 90540, total: 1187940, month: 39600 },
-                                "S26U_512": { factory: 2050400, gongsi: 700000, interest: 111410, total: 1461810, month: 48730 }
-                            }
-                        }
+            "SKT": {
+                "SELECT": {
+                    "24": {
+                        "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                        "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                        "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                        "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                        "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                        "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
+                        "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                        "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                        "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                        "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                        "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                        "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                        "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
                     }
-                };
+                },
+                "GONGSI": {
+                    "24": {
+                        "S26_256": { factory: 1254000, gongsi: 580000, interest: 44490, total: 718490, month: 29940 },
+                        "S26_512": { factory: 1507000, gongsi: 580000, interest: 61190, total: 988190, month: 41180 },
+                        "S26P_256": { factory: 1452000, gongsi: 580000, interest: 57550, total: 929550, month: 38730 },
+                        "S26P_512": { factory: 1705000, gongsi: 580000, interest: 74250, total: 1199250, month: 49970 },
+                        "S26U_256": { factory: 1797400, gongsi: 580000, interest: 80350, total: 1297750, month: 54080 },
+                        "S26U_512": { factory: 2050400, gongsi: 580000, interest: 97050, total: 1567450, month: 65310 }
+                    }
+                }
+            },
+            "KT": {
+                "SELECT": {
+                    "24": {
+                        "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                        "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                        "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                        "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                        "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                        "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
+                        "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                        "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                        "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                        "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                        "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                        "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                        "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
+                    }
+                }
+            },
+            "LGU": {
+                "SELECT": {
+                    "24": {
+                        "S26_256": { factory: 1254000, interest: 78510, total: 1332510, month: 55520 },
+                        "S26_512": { factory: 1507000, interest: 94350, total: 1601350, month: 66720 },
+                        "S26P_256": { factory: 1452000, interest: 90910, total: 1542910, month: 64280 },
+                        "S26P_512": { factory: 1705000, interest: 106750, total: 1811750, month: 75490 },
+                        "S26U_256": { factory: 1797400, interest: 112540, total: 1909940, month: 79580 },
+                        "S26U_512": { factory: 2050400, interest: 115290, total: 2178780, month: 90780 },
+                        "S25E_256": { factory: 1496000, interest: 93660, total: 1589660, month: 66240 },
+                        "S25E_512": { factory: 1639000, interest: 102630, total: 1741630, month: 72570 },
+                        "ZFLIP7FE": { factory: 1199000, interest: 75060, total: 1274060, month: 53090 },
+                        "ZFLIP7_256": { factory: 1485000, interest: 92970, total: 1577970, month: 65750 },
+                        "ZFLIP7_512": { factory: 1643400, interest: 102880, total: 1746280, month: 72760 },
+                        "ZFOLD7_256": { factory: 2379300, interest: 148980, total: 2528280, month: 105350 },
+                        "ZFOLD7_512": { factory: 2537700, interest: 159010, total: 2696710, month: 112370 }
+                    },
+                    "30": {
+                        "S26_256": { factory: 1254000, interest: 97830, total: 1351830, month: 45060 },
+                        "S26_512": { factory: 1507000, interest: 117560, total: 1624560, month: 54150 },
+                        "S26P_256": { factory: 1452000, interest: 113270, total: 1565670, month: 52180 },
+                        "S26P_512": { factory: 1705000, interest: 133010, total: 1838010, month: 61260 },
+                        "S26U_256": { factory: 1797400, interest: 140220, total: 1937620, month: 64580 },
+                        "S26U_512": { factory: 2050400, interest: 159960, total: 2210360, month: 73670 },
+                        "S25E_256": { factory: 1496000, interest: 116710, total: 1612710, month: 53760 },
+                        "S25E_512": { factory: 1639000, interest: 127850, total: 1766850, month: 58900 },
+                        "ZFLIP7FE": { factory: 1199000, interest: 93550, total: 1292550, month: 43090 },
+                        "ZFLIP7_256": { factory: 1485000, interest: 115460, total: 1600460, month: 53360 },
+                        "ZFLIP7_512": { factory: 1643400, interest: 128220, total: 1771620, month: 59050 },
+                        "ZFOLD7_256": { factory: 2379300, interest: 185610, total: 2564110, month: 85500 },
+                        "ZFOLD7_512": { factory: 2537700, interest: 198120, total: 2735820, month: 91200 }
+                    },
+                    "36": {
+                        "S26_256": { factory: 1254000, interest: 117320, total: 1371320, month: 38090 },
+                        "S26_512": { factory: 1507000, interest: 140990, total: 1647990, month: 45770 },
+                        "S26P_256": { factory: 1452000, interest: 135840, total: 1587840, month: 44100 },
+                        "S26P_512": { factory: 1705000, interest: 159510, total: 1864510, month: 51790 },
+                        "S26U_256": { factory: 1797400, interest: 168160, total: 1965560, month: 54590 },
+                        "S26U_512": { factory: 2050400, interest: 191830, total: 2242230, month: 62284 },
+                        "S25E_256": { factory: 1496000, interest: 139940, total: 1635940, month: 45440 },
+                        "S25E_512": { factory: 1639000, interest: 153330, total: 1792330, month: 49790 },
+                        "ZFLIP7FE": { factory: 1199000, interest: 112190, total: 1311190, month: 36420 },
+                        "ZFLIP7_256": { factory: 1485000, interest: 134920, total: 1623920, month: 45110 },
+                        "ZFLIP7_512": { factory: 1643400, interest: 153750, total: 1797150, month: 49920 },
+                        "ZFOLD7_256": { factory: 2379300, interest: 222600, total: 2601900, month: 72260 },
+                        "ZFOLD7_512": { factory: 2537700, interest: 237600, total: 2775300, month: 77100 }
+                    }
+                },
+                "GONGSI": {
+                    "24": {
+                        "S26_256": { factory: 1254000, gongsi: 700000, interest: 36570, total: 590570, month: 24610 },
+                        "S26_512": { factory: 1507000, gongsi: 700000, interest: 53260, total: 860260, month: 35850 },
+                        "S26P_256": { factory: 1452000, gongsi: 700000, interest: 49630, total: 801630, month: 33400 },
+                        "S26P_512": { factory: 1705000, gongsi: 700000, interest: 66330, total: 1071330, month: 44640 },
+                        "S26U_256": { factory: 1797400, gongsi: 700000, interest: 72430, total: 1169830, month: 48740 },
+                        "S26U_512": { factory: 2050400, gongsi: 700000, interest: 89130, total: 1439530, month: 59980 }
+                    },
+                    "30": {
+                        "S26_256": { factory: 1254000, gongsi: 700000, interest: 45700, total: 599700, month: 19990 },
+                        "S26_512": { factory: 1507000, gongsi: 700000, interest: 66580, total: 873580, month: 29120 },
+                        "S26P_256": { factory: 1452000, gongsi: 700000, interest: 62040, total: 814040, month: 27130 },
+                        "S26P_512": { factory: 1705000, gongsi: 700000, interest: 82920, total: 1087920, month: 36270 },
+                        "S26U_256": { factory: 1797400, gongsi: 700000, interest: 90540, total: 1187940, month: 39600 },
+                        "S26U_512": { factory: 2050400, gongsi: 700000, interest: 111410, total: 1461810, month: 48730 }
+                    }
+                }
+            }
+        };
 
         function switchTab(tabId, event) {
             document.querySelectorAll('.output-area').forEach(el => el.classList.remove('active'));
@@ -499,7 +512,7 @@
             updateAdminMsg();
         }
 
-        function updateAll() { updateMsg(); updateAdminMsg(); updateUsimMsg(); }
+        function updateAll() { updateMsg(); updateAdminMsg(); updateUsimMsg(); updateUsimOnlyMsg(); }
 
         function updateMsg() {
             if (!currentCarrier) return;
@@ -524,6 +537,22 @@
                 msg = `안녕하세요 고객님 KT모바일센터입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
             }
             document.getElementById('msgBox').innerText = msg;
+        }
+
+        /* 유심 단독 개통문자 양식 자동 조합 함수 */
+        function updateUsimOnlyMsg() {
+            const phone = document.getElementById('phoneInput').value || "010-0000-0000";
+            const rawDate = document.getElementById('dateInput').value;
+            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
+            
+            let carrierText = "SK or KT or LG";
+            if (currentCarrier === "SKT") carrierText = "SK";
+            else if (currentCarrier === "KT") carrierText = "KT";
+            else if (currentCarrier === "LGU") carrierText = "LG";
+
+            const msg = `안녕하세요 고객님!\n${carrierText} 유심개통 도와드린 담당센터입니다!\n개통내용 안내차 문자 드립니다.\n\n요금제변경가능일 : ${date}\n(요금제 하향 희망하실경우 가능일 이후 직접 변경해주시면되고, 기간내 변경은 불가합니다) \n\n약정기간 12개월간은 해지나, 타사 이동 없이 사용 꼭 부탁드립니다.\n\n차후 문의 사항 있으실경우 해당번호로 언제든지 연락주시면\n빠른 상담 가능하니 번호 저장 꼭 해주시고 연락 부탁드립니다!\n\n업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분\n(주말,공휴일 휴무)\n▶ 정확한 처리를 위해, 최선을 다 하겠습니다\n추후 문의사항은 하단 연락처로 전화 부탁드립니다\n\n▶ 담당매니저 : ${phone}`;
+            
+            document.getElementById('usimOnlyMsgBox').innerText = msg;
         }
 
         function updateUsimMsg() {
