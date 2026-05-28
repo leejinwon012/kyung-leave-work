@@ -55,6 +55,32 @@
         .chip { padding: 6px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; }
         .chip.selected { background: #007bff; color: white; border-color: #007bff; }
 
+        .today-message {
+            position: absolute;
+            padding: 6px 12px;
+            background-color: #e7f1ff;
+            color: #007bff;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 20px;
+            border: 1px solid #b3d7ff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+
+        .today-message.right-top {
+            top: 18px;
+            right: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .today-message.right-top {
+                position: static;
+                display: block;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+
         @media (max-width: 850px) {
             .flex-container { flex-direction: column; gap: 0; }
             .flex-child { width: 100%; }
@@ -63,7 +89,8 @@
 </head>
 <body>
 
-    <div class="card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+    <div class="card" style="max-width: 700px; margin-left: auto; margin-right: auto; position: relative">
+        <div class="today-message right-top">💡 오늘도 칼퇴까지 파이팅! 진상 퇴치 워이워이 저리 가버려 0_0 </div>
         <h2>📋 정보 통합 입력</h2>
         <div class="input-grid">
             <div class="input-group" style="grid-column: span 2;">
