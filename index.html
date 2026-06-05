@@ -132,7 +132,6 @@
                 <label>요금제 변경일 (예: 961002)</label>
                 <input type="text" id="dateInput" placeholder="961002" maxlength="6" oninput="formatDate(this)">
             </div>
-            <!-- [추가 수정] 개통문자 양식의 변경 유지 개월수를 선택할 수 있는 드롭다운 메뉴 추가 -->
             <div class="input-group">
                 <label>요금제 유지 개월</label>
                 <select id="maintainMonth" onchange="updateAll()">
@@ -185,6 +184,7 @@
     <div id="adminTab" class="output-area card">
         <div class="flex-container">
             
+            <!-- 관리콜 상세 설정 -->
             <div class="flex-child">
                 <div class="admin-box">
                     <span class="admin-title">관리콜 상세 설정</span>
@@ -249,6 +249,7 @@
                 </div>
             </div>
 
+            <!-- 유심 관리콜 상세 설정 (수정됨) -->
             <div class="flex-child">
                 <div class="admin-box">
                     <span class="admin-title">유심 관리콜 상세 설정</span>
@@ -261,7 +262,7 @@
                             <label>담당자명 (유심용)</label>
                             <input type="text" id="usimStaffName" placeholder="@@@" oninput="syncFields('staff', this.value); updateAll();">
                         </div>
-                        <div class="input-grid full-width">
+                        <div class="input-group full-width">
                             <label>고객 연락처 (유심용)</label>
                             <input type="text" id="usimCustPhone" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAll();">
                         </div>
@@ -288,6 +289,7 @@
 
         </div>
 
+        <!-- 악세서리 주문 상세 설정 (수정됨) -->
         <div class="admin-box">
             <span class="admin-title">악세서리 주문 상세 설정</span>
             <div class="input-grid">
@@ -306,7 +308,7 @@
                     <label>담당자명 (악세서리용)</label>
                     <input type="text" id="staffNameAcc" placeholder="@@@" oninput="syncFields('staff', this.value); updateAll()">
                 </div>
-                <div class="input-grid" style="grid-column: span 2;">
+                <div class="input-group full-width">
                     <label>고객 연락처 (악세서리용)</label>
                     <input type="text" id="custPhoneAcc" placeholder="010-0000-0000" maxlength="13" oninput="formatPhone(this); syncFields('phone', this.value); updateAll();">
                 </div>
@@ -655,7 +657,6 @@
             const phone = document.getElementById('phoneInput').value || "010-0000-0000";
             const typeName = type === "GONGSI" ? "공시지원금" : "선택약정";
             
-            // [추가 수정] 드롭다운에서 사용자가 동적으로 선택한 개월수 변수 처리
             const selectedMaintainMonth = document.getElementById('maintainMonth').value;
 
             let msg = "";
