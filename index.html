@@ -97,20 +97,22 @@
                     <button class="carrier-btn" id="btn_LGU" onclick="setCarrier('LGU', this)">LGU+</button>
                 </div>
             </div>
+
             <div class="input-group">
-                <label>담당직원 연락처 (문자 연동)</label>
-                <input type="text" id="phoneInput" placeholder="010-6888-5727" maxlength="13" oninput="formatPhone(this); updateAll();">
+                <label>모델 및 용량</label>
+                <select id="modelSelect" onchange="autoMatchPrice(); updateColors();"></select>
             </div>
+            <div class="input-group">
+                <label>색상 선택</label>
+                <select id="colorSelect" onchange="updateAll()"></select>
+            </div>
+
             <div class="input-group">
                 <label>가입 유형</label>
                 <select id="contractType" onchange="autoMatchPrice();">
                     <option value="SELECT">선택약정</option>
                     <option value="GONGSI">공시지원금</option>
                 </select>
-            </div>
-            <div class="input-group">
-                <label>모델 및 용량</label>
-                <select id="modelSelect" onchange="autoMatchPrice(); updateColors();"></select>
             </div>
             <div class="input-group">
                 <label>할부 개월</label>
@@ -120,14 +122,7 @@
                     <option value="36">36개월</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>색상 선택</label>
-                <select id="colorSelect" onchange="updateAll()"></select>
-            </div>
-            <div class="input-group">
-                <label id="priceLabel">할부원금</label>
-                <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateAll()">
-            </div>
+
             <div class="input-group">
                 <label>요금제 변경일 (예: 961002)</label>
                 <input type="text" id="dateInput" placeholder="961002" maxlength="6" oninput="formatDate(this)">
@@ -141,6 +136,16 @@
                     <option value="6">6개월</option>
                 </select>
             </div>
+
+            <div class="input-group">
+                <label>담당직원 연락처 (문자 연동)</label>
+                <input type="text" id="phoneInput" placeholder="010-6888-5727" maxlength="13" oninput="formatPhone(this); updateAll();">
+            </div>
+            <div class="input-group">
+                <label id="priceLabel">할부원금</label>
+                <input type="text" id="priceInput" placeholder="자동 입력됨" oninput="updateAll()">
+            </div>
+        </div>
         </div>
     </div>
 
