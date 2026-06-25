@@ -172,6 +172,26 @@
                 </div>
             </div>
         </div>
+
+
+        <div style="margin-top: 20px;">
+            <span style="font-weight: bold; color: #495057; margin-bottom: 8px; display: block;">중고폰 반납 안내 문자 양식</span>
+            <div id="usedPhoneMsgBox" class="msg-content" contenteditable="true" style="min-height: 200px;">중고폰판매업체정보알려드립니다
+"받는 이"→ "중고폰"
+"연락처"→010-9555-5262
+"주소"→ 대전 유성구 계룡로105번길 15, 2층 203-D464호
+----------------------------------
+핸드폰은 초기화해서 꼭 보내주세요 / 핸드폰 발송시 박스 및 구성품(필름,케이스) 폐기됩니다
+보내실때 송장번호 문자 넣어주시면 빠른 처리 가능합니다 
+
+보내실때는 안심소포가 아닌 *일반소포* 로 발송해주셔야 수령가능합니다^^
+
+순서
+"수령후 검수"→"금액안내"→"고객님판매동의"→"입금"</div>
+            <div class="copy-wrapper">
+                <button class="copy-btn" onclick="copyText('usedPhoneMsgBox')">중고폰 문자 복사</button>
+            </div>
+        </div>
     </div>
 
     <div id="priceTab" class="output-area card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
@@ -624,7 +644,6 @@
             const data = priceDB[currentCarrier]?.[type]?.[month]?.[model];
             
             if (data) {
-                document.getElementById('priceInput').value = data.total;
                 document.getElementById('td_name').innerText = modelData[model].name;
                 document.getElementById('td_factory').innerText = data.factory.toLocaleString() + "원";
                 document.getElementById('td_interest').innerText = data.interest.toLocaleString() + "원";
@@ -699,7 +718,6 @@
                 msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].nameLGU} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 ${selectedMaintainMonth}개월 이후 (${dl})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSwn5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7Un6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-onn유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
             } else if (currentCarrier === 'KT') {
                 const dk = dateInput.getAttribute('data-kt') || "[날짜]";
-                // 요청 주신 KT 고유의 신규 레이아웃 적용 및 데이터 매핑
                 msg = `안녕하세요 고객님 KT모바일담당자입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
             }
             document.getElementById('msgBox').innerText = msg;
