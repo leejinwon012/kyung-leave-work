@@ -644,6 +644,7 @@
             const data = priceDB[currentCarrier]?.[type]?.[month]?.[model];
             
             if (data) {
+                document.getElementById('priceInput').value = data.total;
                 document.getElementById('td_name').innerText = modelData[model].name;
                 document.getElementById('td_factory').innerText = data.factory.toLocaleString() + "원";
                 document.getElementById('td_interest').innerText = data.interest.toLocaleString() + "원";
