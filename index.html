@@ -217,8 +217,6 @@
                             <label>양식 선택</label>
                             <select id="callFormType" onchange="updateAdminMsg(); toggleCorasolUI();">
                                 <option value="1차">1차 관리콜이력</option>
-                                <option value="일반">관리콜이력</option>
-                                <option value="코라솔">코라솔</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -262,7 +260,7 @@
                             </select>
                         </div>
 
-                        <div class="input-group" id="corasolResultGroup" style="display: none;">
+                        <div class="input-group" id="corasolResultGroup">
                             <label>코라솔 결과 선택</label>
                             <select id="corasolResult" onchange="updateAdminMsg()">
                                 <option value="성공" selected>성공</option>
@@ -769,52 +767,42 @@
         }
 
         function updateAdminMsg() {
-                    const userCall = document.getElementById('userNameCall').value || "[고객명]";
-                    const userAcc = document.getElementById('userNameAcc').value || "[고객명]";
-                    
-                    const staffCall = document.getElementById('staffNameCall').value || "[담당자]";
-                    const staffAcc = document.getElementById('staffNameAcc').value || "[담당자]";
-                    
-                    const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
-                    const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
-                    
-                    const plan = document.getElementById('targetPlan').value || "[요금제 고르기]";
-                    const ret = document.getElementById('returnYn').value;
-                    const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
-                    
-                    const rawDate = document.getElementById('dateInput').value;
-                    const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
+            const userCall = document.getElementById('userNameCall').value || "[고객명]";
+            const userAcc = document.getElementById('userNameAcc').value || "[고객명]";
+            
+            const staffCall = document.getElementById('staffNameCall').value || "[담당자]";
+            const staffAcc = document.getElementById('staffNameAcc').value || "[담당자]";
+            
+            const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
+            const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
+            
+            const plan = document.getElementById('targetPlan').value || "[요금제 고르기]";
+            const ret = document.getElementById('returnYn').value;
+            const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
+            
+            const rawDate = document.getElementById('dateInput').value;
+            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
 
-                    const formType = document.getElementById('callFormType').value;
-                    const guide = document.getElementById('guideYn').value;
-                    const upcell = document.getElementById('upcellResult').value;
-                    const usim = document.getElementById('usimYn').value;
+            const guide = document.getElementById('guideYn').value;
+            const upcell = document.getElementById('upcellResult').value;
+            const usim = document.getElementById('usimYn').value;
+            const corasolRes = document.getElementById('corasolResult').value;
 
+            const title = '[1차 관리콜이력]';
 
-                    let title = '[관리콜이력]';
-                    let coreTailMsg = `\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
+            const callMsg = `${title}\n고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제 : ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 코라솔결과 : ${corasolRes}\n- 유심인식여부 : ${usim}`;
+            document.getElementById('callResult').innerText = callMsg;
+            // --------------------------------------------------
 
-                    if (formType === '1차') {
-                        title = '[1차 관리콜이력]';
-                    } else if (formType === '코라솔') {
-                        title = '[코라솔 관리콜이력]';
-                        const corasolRes = document.getElementById('corasolResult').value;
-                        coreTailMsg = `\n- 건식업셀결과 : ${upcell}\n- 코라솔결과 : ${corasolRes}\n- 유심인식여부 : ${usim}`;
-                    }
+            const br = document.getElementById('branch').value;
+            const addr = document.getElementById('address').value || "[주소 입력]";
+            const fullModelName = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
+            const model = fullModelName.replace(/\s\d+GB/g, '');
+            const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
 
-                    const callMsg = `${title}\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}${coreTailMsg}`;
-                    document.getElementById('callResult').innerText = callMsg;
-                    // --------------------------------------------------
-
-                    const br = document.getElementById('branch').value;
-                    const addr = document.getElementById('address').value || "[주소 입력]";
-                    const fullModelName = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
-                    const model = fullModelName.replace(/\s\d+GB/g, '');
-                    const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
-
-                    const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${userAcc}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
-                    document.getElementById('accResult').innerText = accMsg;
-                }
+            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${userAcc}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
+            document.getElementById('accResult').innerText = accMsg;
+        }
 
         function formatPhone(t) {
             let v = t.value.replace(/[^0-9]/g, '');
@@ -839,17 +827,9 @@
             navigator.clipboard.writeText(t).then(() => alert("복사되었습니다!"));
         }
 
-
-        
         function toggleCorasolUI() {
-            const formType = document.getElementById('callFormType').value;
             const corasolGroup = document.getElementById('corasolResultGroup');
-            
-            if (formType === "코라솔") {
-                corasolGroup.style.display = "block";
-            } else {
-                corasolGroup.style.display = "none";
-            }
+            corasolGroup.style.display = "none";
         }
     </script>
 </body>
