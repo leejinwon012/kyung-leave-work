@@ -314,6 +314,15 @@
                                 <option value="실패">실패</option>
                             </select>
                         </div>
+
+                        <!-- 유심 관리콜 코라솔 결과 추가 선택지 -->
+                        <div class="input-group">
+                            <label>코라솔 결과 선택</label>
+                            <select id="usimCorasolResult" onchange="updateUsimMsg()">
+                                <option value="성공" selected>성공</option>
+                                <option value="실패">실패</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="usimCallResult" class="msg-content" contenteditable="true" style="min-height: 382px; background:#fff; margin-top:15px;"></div>
                     <div class="copy-wrapper"><button class="copy-btn" onclick="copyText('usimCallResult')">유심 관리콜 복사</button></div>
@@ -495,7 +504,7 @@
                         "I17A_1T": { factory: 2190000, interest: 170810, total: 2360810, month: 78690 },
                         "I17P_256": { factory: 1790000, interest: 139640, total: 1929640, month: 64320 },
                         "I17P_512": { factory: 2090000, interest: 163030, total: 2253030, month: 75100 },
-                        "I17P_1T": { factory: 2390000, interest: 186430, total: 2576430, month: 85880 },
+                        "I17P_1T": { factory: 2390000, interest: 186430, total: 2613600, month: 72600 },
                         "I17PM_256": { factory: 1990000, interest: 155230, total: 2145230, month: 71500 },
                         "I17PM_512": { factory: 2290000, interest: 178620, total: 2468620, month: 82280 },
                         "I17PM_1T": { factory: 2590000, interest: 202020, total: 2792020, month: 93060 },
@@ -756,13 +765,15 @@
             const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
             const usim = document.getElementById('usimRecognizeYn').value;
             const upcell = document.getElementById('usimUpcellResult').value;
+            const corasolRes = document.getElementById('usimCorasolResult').value; // 유심용 코라솔 결과값 가져오기
 
             let carrierText = "유심번호이동";
             if (currentCarrier === "SKT") carrierText = "SK유심번호이동";
             else if (currentCarrier === "KT") carrierText = "KT유심번호이동";
             else if (currentCarrier === "LGU") carrierText = "LG유심번호이동";
 
-            const usimMsg = `[유심 관리콜이력]\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사 : ${carrierText}\n- 유치경로 : 인터넷가입자업셀\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 유심인식여부 : ${usim}\n- 건식업셀결과 : ${upcell}`;
+            // 양식에 코라솔 결과 반영
+            const usimMsg = `[유심 관리콜이력]\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사 : ${carrierText}\n- 유치경로 : 인터넷가입자업셀\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 유심인식여부 : ${usim}\n- 건식업셀결과 : ${upcell}\n- 코라솔결과 : ${corasolRes}`;
             document.getElementById('usimCallResult').innerText = usimMsg;
         }
 
@@ -828,8 +839,6 @@
         }
 
         function toggleCorasolUI() {
-            const corasolGroup = document.getElementById('corasolResultGroup');
-            corasolGroup.style.display = "none";
         }
     </script>
 </body>
