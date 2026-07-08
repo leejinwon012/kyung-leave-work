@@ -215,9 +215,10 @@
                     <div class="admin-grid">
                         <div class="input-group full-width">
                             <label>양식 선택</label>
-                            <select id="callFormType" onchange="updateAdminMsg()">
+                            <select id="callFormType" onchange="updateAdminMsg(); toggleCorasolUI();">
                                 <option value="1차">1차 관리콜이력</option>
                                 <option value="일반">관리콜이력</option>
+                                <option value="코라솔">코라솔</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -260,6 +261,15 @@
                                 <option value="실패">실패</option>
                             </select>
                         </div>
+
+                        <div class="input-group" id="corasolResultGroup" style="display: none;">
+                            <label>코라솔 결과 선택</label>
+                            <select id="corasolResult" onchange="updateAdminMsg()">
+                                <option value="성공" selected>성공</option>
+                                <option value="실패">실패</option>
+                            </select>
+                        </div>
+
                         <div class="input-group full-width">
                             <label>유심인식여부</label>
                             <select id="usimYn" onchange="updateAdminMsg()">
@@ -297,6 +307,7 @@
                                 <option value="N" selected>N</option>
                             </select>
                         </div>
+                        
                         <div class="input-group">
                             <label>건식업셀결과</label>
                             <select id="usimUpcellResult" onchange="updateUsimMsg()">
@@ -719,7 +730,7 @@
                 msg = `[LGU+]\n고객님 안녕하세요\n휴대폰 개통이 완료되어 안내 문자 드립니다\n\n1) 개통단말기 : ${modelData[modelKey].nameLGU} ${color}\n2) 할부원금/개월 : ${price}원 / ${month}개월\n3) 요금제변경일 : 개통월 제외 ${selectedMaintainMonth}개월 이후 (${dl})\nㄴ기간내 요금제 변경 불가 및 날짜 맞춰 문자 발송 예정(요금제 직접변경) \n4) 데이터이동방법링크 : https://youtu.be/sIQPK2PpqSwn5) 유심이동방법링크 : https://youtu.be/I4dshCOcT7Un6) 카카오톡백업링크 : https://youtu.be/YK_fif9YA-onn유심교체, 데이터이동시 어려우신부분 있으시면 연락 언제든지 주세요! 업무시간 외에는 통화가 어려울수있으니 문자 남겨주시면 연락드리겠습니다 감사합니다\n\n☎ 직통번호 : ${phone} ☎\n[업무시간 : 10시~18시 / 점심시간 : 12시~13시 30분]`;
             } else if (currentCarrier === 'KT') {
                 const dk = dateInput.getAttribute('data-kt') || "[날짜]";
-                msg = `안녕하세요 고객님 KT모바일담당자입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n업무 외 시간과 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
+                msg = `안녕하세요 고객님 KT모바일담당자입니다\n개통 완료되어 안내 문자 남겨드립니다\n\n-----------------------------------------------\n\n[요금제변경일] ${dk}\n[개통모델] ${modelData[modelKey].name} / ${color}\n[할부원금] ${price}원 (Vat포함)\n[할부기간] ${month}개월\n[약정기간] 24개월\n\n[유심&데이터 이동 매뉴얼]\n1. 유심 이동 방법 (6:00~)\nhttps://youtu.be/I4dshCOcT7U\n\n2. 데이터 이동 방법\nhttps://youtu.be/sIQPK2PpqSw\n\n3. 카카오톡 백업 방법\nhttps://youtu.be/YK_fif9YA-o\n\n업무 외 시간 and 점심시간은 통화가 어렵습니다\n다른 고객님 상담중엔 바로 통화 연결이 어려울수있으니 연결이 안될경우 문자 남겨주시면 확인 후 빠른 연락드리겠습니다\n\n요금제변경일이 되면 안내 문자를 드릴 예정입니다 문자 수신 후 희망하시는 요금제로 직접 변경하셔서 이용 가능하십니다\n\n★문의사항은 저에게 전화 부탁드립니다★\n★${phone}★`;
             }
             document.getElementById('msgBox').innerText = msg;
         }
@@ -758,40 +769,52 @@
         }
 
         function updateAdminMsg() {
-            const userCall = document.getElementById('userNameCall').value || "[고객명]";
-            const userAcc = document.getElementById('userNameAcc').value || "[고객명]";
-            
-            const staffCall = document.getElementById('staffNameCall').value || "[담당자]";
-            const staffAcc = document.getElementById('staffNameAcc').value || "[담당자]";
-            
-            const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
-            const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
-            
-            const plan = document.getElementById('targetPlan').value || "[요금제 고르기]";
-            const ret = document.getElementById('returnYn').value;
-            const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
-            
-            const rawDate = document.getElementById('dateInput').value;
-            const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
+                    const userCall = document.getElementById('userNameCall').value || "[고객명]";
+                    const userAcc = document.getElementById('userNameAcc').value || "[고객명]";
+                    
+                    const staffCall = document.getElementById('staffNameCall').value || "[담당자]";
+                    const staffAcc = document.getElementById('staffNameAcc').value || "[담당자]";
+                    
+                    const callPhone = document.getElementById('custPhoneCall').value || "[고객 연락처]";
+                    const accPhone = document.getElementById('custPhoneAcc').value || "[고객 연락처]";
+                    
+                    const plan = document.getElementById('targetPlan').value || "[요금제 고르기]";
+                    const ret = document.getElementById('returnYn').value;
+                    const carrierInput = currentCarrier === 'LGU' ? 'LG' : currentCarrier || "LG";
+                    
+                    const rawDate = document.getElementById('dateInput').value;
+                    const date = rawDate.length === 6 ? rawDate.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3') : "[날짜]";
 
-            const formType = document.getElementById('callFormType').value;
-            const title = formType === '1차' ? '[1차 관리콜이력]' : '[관리콜이력]';
-            const guide = document.getElementById('guideYn').value;
-            const upcell = document.getElementById('upcellResult').value;
-            const usim = document.getElementById('usimYn').value;
+                    const formType = document.getElementById('callFormType').value;
+                    const guide = document.getElementById('guideYn').value;
+                    const upcell = document.getElementById('upcellResult').value;
+                    const usim = document.getElementById('usimYn').value;
 
-            const callMsg = `${title}\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
-            document.getElementById('callResult').innerText = callMsg;
 
-            const br = document.getElementById('branch').value;
-            const addr = document.getElementById('address').value || "[주소 입력]";
-            const fullModelName = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
-            const model = fullModelName.replace(/\s\d+GB/g, '');
-            const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
+                    let title = '[관리콜이력]';
+                    let coreTailMsg = `\n- 건식업셀결과 : ${upcell}\n- 유심인식여부 : ${usim}`;
 
-            const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${userAcc}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
-            document.getElementById('accResult').innerText = accMsg;
-        }
+                    if (formType === '1차') {
+                        title = '[1차 관리콜이력]';
+                    } else if (formType === '코라솔') {
+                        title = '[코라솔 관리콜이력]';
+                        const corasolRes = document.getElementById('corasolResult').value;
+                        coreTailMsg = `\n- 건식업셀결과 : ${upcell}\n- 코라솔결과 : ${corasolRes}\n- 유심인식여부 : ${usim}`;
+                    }
+
+                    const callMsg = `${title}\n- 고객명/담당자 : ${userCall} / ${staffCall}\n- 개통통신사: ${carrierInput}\n- 고객연락처 : ${callPhone}\n- 요금제변경일 : ${date}\n- 변경요금제: ${plan}\n- 중고폰반납 : ${ret}\n- 반납안내여부 : ${guide}${coreTailMsg}`;
+                    document.getElementById('callResult').innerText = callMsg;
+                    // --------------------------------------------------
+
+                    const br = document.getElementById('branch').value;
+                    const addr = document.getElementById('address').value || "[주소 입력]";
+                    const fullModelName = modelData[document.getElementById('modelSelect').value]?.name || "[기종]";
+                    const model = fullModelName.replace(/\s\d+GB/g, '');
+                    const chips = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText).join(' , ');
+
+                    const accMsg = `★모바일 악세사리 주문요청★\n\n지점명 : ${br}\n고객명 : ${userAcc}\n담당자 : ${staffAcc}\n연락처 : ${accPhone}\n모바일 기종 : ${model}\n케이스 종류 : ${chips}\n고객주소 : ${addr}`;
+                    document.getElementById('accResult').innerText = accMsg;
+                }
 
         function formatPhone(t) {
             let v = t.value.replace(/[^0-9]/g, '');
@@ -814,6 +837,19 @@
         function copyText(id) {
             const t = document.getElementById(id).innerText;
             navigator.clipboard.writeText(t).then(() => alert("복사되었습니다!"));
+        }
+
+
+        
+        function toggleCorasolUI() {
+            const formType = document.getElementById('callFormType').value;
+            const corasolGroup = document.getElementById('corasolResultGroup');
+            
+            if (formType === "코라솔") {
+                corasolGroup.style.display = "block";
+            } else {
+                corasolGroup.style.display = "none";
+            }
         }
     </script>
 </body>
